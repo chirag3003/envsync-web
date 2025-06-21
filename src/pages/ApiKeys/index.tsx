@@ -279,7 +279,7 @@ export const ApiKeys = () => {
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Key className="size-8 mr-3 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
-            API Keys
+            API Keys ({apiKeys.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -331,14 +331,14 @@ export const ApiKeys = () => {
                             8
                           )}...${apiKey.key.substring(apiKey.key.length - 8)}`}
                         </code>
-                        <Button
+                        {/* <Button
                           size="sm"
                           variant="ghost"
                           className="h-6 w-6 p-0 text-gray-400 hover:text-white"
                           onClick={() => copy.mutate(apiKey.key)}
                         >
                           <Copy className="h-3 w-3" />
-                        </Button>
+                        </Button> */}
                       </div>
                     </td>
                     <td className="py-4 px-4">

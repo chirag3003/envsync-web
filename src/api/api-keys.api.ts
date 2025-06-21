@@ -10,7 +10,7 @@ import { useInvalidateQueries } from "@/hooks/useApi";
 
 const useApiKeys = () => {
   return useQuery({
-    queryKey: [API_KEYS.GET_API_KEYS],
+    queryKey: [API_KEYS.ALL_API_KEYS],
     queryFn: async () => {
       const [keysData, usersData] = await Promise.all([
         sdk.apiKeys.getAllApiKeys(),

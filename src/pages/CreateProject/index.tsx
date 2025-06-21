@@ -47,7 +47,8 @@ export const CreateProject = () => {
     } else if (formData.name.length > MAX_NAME_LENGTH) {
       errors.name = `Project name must be less than ${MAX_NAME_LENGTH} characters`;
     } else if (!PROJECT_NAME_REGEX.test(formData.name.trim())) {
-      errors.name = "Project name can only contain letters, numbers, spaces, hyphens, and underscores";
+      errors.name =
+        "Project name can only contain letters, numbers, spaces, hyphens, and underscores";
     }
 
     // Validate description
@@ -60,14 +61,17 @@ export const CreateProject = () => {
   }, [formData]);
 
   // Handle input changes
-  const handleInputChange = useCallback((field: keyof CreateProjectFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear field error when user starts typing
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [formErrors]);
+  const handleInputChange = useCallback(
+    (field: keyof CreateProjectFormData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // Clear field error when user starts typing
+      if (formErrors[field]) {
+        setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [formErrors]
+  );
 
   // Create project mutation
   const createProject = useMutation({
@@ -79,7 +83,7 @@ export const CreateProject = () => {
     },
     onSuccess: (response) => {
       toast.success("Project created successfully!");
-      navigate(`/projects/${response.id}`);
+      navigate(`/applications/${response.id}`);
     },
     onError: (error) => {
       console.error("Failed to create project:", error);
@@ -88,13 +92,16 @@ export const CreateProject = () => {
   });
 
   // Handle form submission
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm() || createProject.isPending) return;
-    
-    createProject.mutate(formData);
-  }, [formData, validateForm, createProject]);
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (!validateForm() || createProject.isPending) return;
+
+      createProject.mutate(formData);
+    },
+    [formData, validateForm, createProject]
+  );
 
   // Handle back navigation
   const handleBack = useCallback(() => {
@@ -142,7 +149,7 @@ export const CreateProject = () => {
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 className={`bg-slate-900 border-slate-700 text-white ${
-                  formErrors.name ? 'border-red-500' : ''
+                  formErrors.name ? "border-red-500" : ""
                 }`}
                 placeholder="Enter project name"
                 disabled={createProject.isPending}
@@ -153,7 +160,9 @@ export const CreateProject = () => {
               )}
               <div className="flex justify-between text-xs text-slate-400">
                 <span>Use a descriptive name for your project</span>
-                <span>{formData.name.length}/{MAX_NAME_LENGTH}</span>
+                <span>
+                  {formData.name.length}/{MAX_NAME_LENGTH}
+                </span>
               </div>
             </div>
 
@@ -165,9 +174,11 @@ export const CreateProject = () => {
               <Textarea
                 id="project-description"
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 className={`bg-slate-900 border-slate-700 text-white min-h-[100px] ${
-                  formErrors.description ? 'border-red-500' : ''
+                  formErrors.description ? "border-red-500" : ""
                 }`}
                 placeholder="Describe what this project is for..."
                 disabled={createProject.isPending}
@@ -178,13 +189,17 @@ export const CreateProject = () => {
               )}
               <div className="flex justify-between text-xs text-slate-400">
                 <span>Optional description to help identify this project</span>
-                <span>{formData.description.length}/{MAX_DESCRIPTION_LENGTH}</span>
+                <span>
+                  {formData.description.length}/{MAX_DESCRIPTION_LENGTH}
+                </span>
               </div>
             </div>
 
             {/* Project Preview */}
             <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-              <h4 className="text-sm font-medium text-white mb-3">Project Preview</h4>
+              <h4 className="text-sm font-medium text-white mb-3">
+                Project Preview
+              </h4>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-slate-500">Name:</span>
@@ -193,7 +208,9 @@ export const CreateProject = () => {
                   </span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <span className="text-xs text-slate-500 mt-0.5">Description:</span>
+                  <span className="text-xs text-slate-500 mt-0.5">
+                    Description:
+                  </span>
                   <span className="text-sm text-slate-300">
                     {formData.description || "No description provided"}
                   </span>
@@ -237,12 +254,20 @@ export const CreateProject = () => {
       {/* Help Section */}
       <Card className="bg-slate-800 border-slate-700">
         <CardContent className="p-6">
-          <h4 className="text-sm font-medium text-white mb-3">What happens next?</h4>
+          <h4 className="text-sm font-medium text-white mb-3">
+            What happens next?
+          </h4>
           <div className="space-y-2 text-sm text-slate-400">
             <p>• Your project will be created and ready to use</p>
-            <p>• You can start adding environment variables for different environments</p>
+            <p>
+              • You can start adding environment variables for different
+              environments
+            </p>
             <p>• Team members can be given access to manage the project</p>
-            <p>• You can integrate with your deployment pipeline using our CLI or API</p>
+            <p>
+              • You can integrate with your deployment pipeline using our CLI or
+              API
+            </p>
           </div>
         </CardContent>
       </Card>

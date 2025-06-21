@@ -191,7 +191,7 @@ export const ProjectEnvironments = () => {
         onExport={() => console.log("Export functionality not implemented yet")}
         onRefresh={handleRetry}
         onManageEnvironments={() => {
-          navigate(`/projects/${projectNameId}/manage-environments`);
+          navigate(`/applications/${projectNameId}/manage-environments`);
         }}
       />
 

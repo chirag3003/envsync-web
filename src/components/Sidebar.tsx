@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   ChevronLeft,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
@@ -17,6 +18,7 @@ import { useMemo } from "react";
 const navItems = [
   { id: "applications", name: "Projects", icon: Database },
   { id: "users", name: "Team", icon: Users },
+  { id: "roles", name: "Roles", icon: ShieldAlert },
   { id: "apikeys", name: "API Keys", icon: Key },
   { id: "audit", name: "Activity", icon: Activity },
   { id: "settings", name: "Account", icon: Settings },

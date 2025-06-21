@@ -1,6 +1,13 @@
 export enum API_KEYS {
-  GET_API_KEYS = "api-keys",
-  ALL_APPLICATIONS = "applications",
+  ALL_API_KEYS = "api-keys",
+  ALL_APPLICATIONS = "applications/all",
+  ALL_USERS = "users/all",
+  ALL_ROLES = "roles/all",
+  ALL_ENVIRONMENTS = "environments/all",
+  ALL_ORGANIZATIONS = "organizations/all",
+  ALL_AUDIT_LOGS = "audit-logs/all",
+  ALL_ENVIRONMENT_TYPES = "environment-types/all",
+  ALL_ENVIRONMENT_VARIABLES = "environment-variables/all",
 }
 
 export interface FormData {

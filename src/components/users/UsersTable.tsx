@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserRow } from "./UserRow";
 import { EmptyState } from "./EmptyState";
+import { Users } from "lucide-react";
 
 interface User {
   id: string;
@@ -22,18 +23,21 @@ interface UsersTableProps {
   onDeleteUser: (user: User) => void;
 }
 
-export const UsersTable = ({ 
-  users, 
-  actionLoadingStates, 
-  canManageUsers, 
-  onInviteClick, 
-  onEditRole, 
-  onDeleteUser 
+export const UsersTable = ({
+  users,
+  actionLoadingStates,
+  canManageUsers,
+  onInviteClick,
+  onEditRole,
+  onDeleteUser,
 }: UsersTableProps) => {
   return (
     <Card className="bg-gray-800 border-gray-700">
-      <CardHeader>
-        <CardTitle className="text-white">Team Members ({users.length})</CardTitle>
+      <CardHeader className="flex flex-row gap-3">
+        <Users className="size-8 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
+        <CardTitle className="text-white">
+          Team Members ({users.length})
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {users.length === 0 ? (

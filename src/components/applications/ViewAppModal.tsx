@@ -222,7 +222,7 @@ export const ViewAppModal = ({
               className="text-white border-slate-600 hover:bg-slate-700"
               onClick={() => {
                 // Navigate to project environments
-                navigate(`/projects/${app.id}`);
+                navigate(`/applications/${app.id}`);
               }}
             >
               <ExternalLink className="w-4 h-4 mr-2" />

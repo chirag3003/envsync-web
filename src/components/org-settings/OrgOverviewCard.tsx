@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Eye, Globe } from "lucide-react";
+import { Eye } from "lucide-react";
 
 interface OrgData {
   id?: string;
@@ -35,7 +35,7 @@ export const OrgOverviewCard = ({ orgData }: OrgOverviewCardProps) => {
   return (
     <Card className="bg-gray-800 border-gray-700">
       <CardHeader className="flex flex-row gap-2">
-        <Globe className="size-8 mr-1 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
+        <Eye className="size-8 mr-1 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
         <CardTitle className="text-white">Organization Overview</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

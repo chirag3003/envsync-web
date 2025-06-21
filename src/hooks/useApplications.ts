@@ -229,7 +229,7 @@ export const useApplications = () => {
   }, [refetch]);
 
   const handleCreateProject = useCallback(() => {
-    navigate("/projects/create");
+    navigate("/applications/create");
   }, [navigate]);
 
   // Modal handlers

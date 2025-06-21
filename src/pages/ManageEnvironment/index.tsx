@@ -290,7 +290,7 @@ export const ManageEnvironment = () => {
 
   // Handle back navigation
   const handleBack = useCallback(() => {
-    navigate(`/projects/${projectNameId}`);
+    navigate(`/applications/${projectNameId}`);
   }, [navigate, projectNameId]);
 
   // Loading state
@@ -413,7 +413,7 @@ export const ManageEnvironment = () => {
                   <Button
                     onClick={() =>
                       navigate(
-                        `/projects/${projectNameId}?env=${envType.id}&selected=${envType.id}`
+                        `/applications/${projectNameId}?env=${envType.id}&selected=${envType.id}`
                       )
                     }
                     variant="ghost"

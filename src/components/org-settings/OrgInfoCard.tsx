@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Contact2, User, Users, Users2 } from "lucide-react";
+import { Globe } from "lucide-react";
 import { FormData, FormErrors } from "@/constants";
 import { LogoUpload } from "./LogoUpload";
 
@@ -38,7 +38,7 @@ export const OrgInfoCard = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Users2 className="size-8 mr-1 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
+            <Globe className="size-8 mr-1 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
             <CardTitle className="text-white">
               Organization Information
             </CardTitle>

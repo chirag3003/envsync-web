@@ -10,6 +10,20 @@ export const useInvalidateQueries = () => {
 
   return {
     invalidateApiKeys: () =>
-      queryClient.invalidateQueries({ queryKey: [API_KEYS.GET_API_KEYS] }),
+      queryClient.invalidateQueries({ queryKey: [API_KEYS.ALL_API_KEYS] }),
+    invalidateRoles: () =>
+      queryClient.invalidateQueries({
+        queryKey: [API_KEYS.ALL_ROLES],
+      }),
+    invalidateUsers: () =>
+      queryClient.invalidateQueries({ queryKey: [API_KEYS.ALL_USERS] }),
+    invalidateApplications: () =>
+      queryClient.invalidateQueries({ queryKey: [API_KEYS.ALL_APPLICATIONS] }),
+    invalidateEnvironments: () =>
+      queryClient.invalidateQueries({ queryKey: [API_KEYS.ALL_ENVIRONMENTS] }),
+    invalidateEnvironmentVariables: () =>
+      queryClient.invalidateQueries({
+        queryKey: [API_KEYS.ALL_ENVIRONMENT_VARIABLES],
+      }),
   };
 };

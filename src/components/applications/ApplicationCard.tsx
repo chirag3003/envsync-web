@@ -1,15 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Database, 
-  Calendar, 
-  MoreHorizontal, 
-  Eye, 
-  Edit, 
+import {
+  Database,
+  Calendar,
+  MoreHorizontal,
+  Eye,
+  Edit,
   Trash2,
   Key,
-  Shield
+  Shield,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { App } from "@/api/constants";
+import { App } from "@/constants";
 
 interface ApplicationCardProps {
   app: App;
@@ -27,18 +27,18 @@ interface ApplicationCardProps {
   onDelete: (app: App) => void;
 }
 
-export const ApplicationCard = ({ 
-  app, 
-  canEdit, 
-  onView, 
-  onEdit, 
-  onDelete 
+export const ApplicationCard = ({
+  app,
+  canEdit,
+  onView,
+  onEdit,
+  onDelete,
 }: ApplicationCardProps) => {
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     }).format(date);
   };
 
@@ -46,7 +46,7 @@ export const ApplicationCard = ({
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -58,7 +58,10 @@ export const ApplicationCard = ({
     <Card className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-all duration-200 group cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3" onClick={() => onView(app)}>
+          <div
+            className="flex items-center space-x-3"
+            onClick={() => onView(app)}
+          >
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-blue-400 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Database className="w-5 h-5 text-white" />
             </div>
@@ -67,20 +70,20 @@ export const ApplicationCard = ({
                 {app.name}
               </CardTitle>
               <div className="flex items-center space-x-2 mt-1">
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className={`text-xs ${
-                    app.status === 'active' 
-                      ? 'bg-emerald-500/20 text-emerald-400' 
-                      : 'bg-slate-600 text-slate-300'
+                    app.status === "active"
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "bg-slate-600 text-slate-300"
                   }`}
                 >
-                  {app.status || 'active'}
+                  {app.status || "active"}
                 </Badge>
               </div>
             </div>
           </div>
-          
+
           {canEdit && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -93,7 +96,10 @@ export const ApplicationCard = ({
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-slate-800 border-slate-700" align="end">
+              <DropdownMenuContent
+                className="bg-slate-800 border-slate-700"
+                align="end"
+              >
                 <DropdownMenuItem
                   className="text-white hover:bg-slate-700 cursor-pointer"
                   onClick={(e) => {
@@ -129,12 +135,12 @@ export const ApplicationCard = ({
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-0" onClick={() => onView(app)}>
         <p className="text-slate-400 text-sm mb-4 line-clamp-2">
           {app.description || "No description provided"}
         </p>
-        
+
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1 text-slate-400">
@@ -146,13 +152,13 @@ export const ApplicationCard = ({
               <span>{app.secret_count || 0} secrets</span>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-1 text-slate-400">
             <Calendar className="w-3 h-3" />
             <span>{getRelativeTime(app.updated_at)}</span>
           </div>
         </div>
-        
+
         <div className="mt-4 pt-4 border-t border-slate-700">
           <Button
             onClick={(e) => {

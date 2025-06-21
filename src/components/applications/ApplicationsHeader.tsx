@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import { ApplicationStats } from "./ApplicationStats";
-import { Statistics } from "@/api/constants";
+import { Statistics } from "@/constants";
 
 interface ApplicationsHeaderProps {
   statistics: Statistics;
@@ -35,7 +35,9 @@ export const ApplicationsHeader = ({
           className="text-slate-400 border-slate-600 hover:bg-slate-700"
           disabled={isRefetching}
         >
-          <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-4 h-4 ${isRefetching ? "animate-spin" : ""}`}
+          />
         </Button>
         {canEdit && (
           <Button

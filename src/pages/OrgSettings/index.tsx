@@ -31,6 +31,7 @@ export const OrgSettings = () => {
     handleLogoUpload,
     handleLogoRemove,
     handleSaveChanges,
+    handleResetChanges,
 
     // Delete handlers
     handleOpenDeleteModal,
@@ -64,6 +65,7 @@ export const OrgSettings = () => {
           onLogoUpload={handleLogoUpload}
           onLogoRemove={handleLogoRemove}
           onSaveChanges={handleSaveChanges}
+          onResetChanges={handleResetChanges}
           isSaving={isSaving}
           logoPreview={logoPreview}
         />

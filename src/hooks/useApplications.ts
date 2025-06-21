@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { 
-  App, 
-  FilterOptions, 
+import {
+  App,
+  FilterOptions,
   Statistics,
   DEFAULT_FILTER_OPTIONS,
-  DEBOUNCE_DELAY 
-} from "@/api/constants";
+  DEBOUNCE_DELAY,
+} from "@/constants";
+import { api as Api } from "@/api";
 
 export const useApplications = () => {
   const { api, user } = useAuth();
@@ -19,8 +20,10 @@ export const useApplications = () => {
   // State management
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>(DEFAULT_FILTER_OPTIONS);
-  
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>(
+    DEFAULT_FILTER_OPTIONS
+  );
+
   // Modal states
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -38,32 +41,48 @@ export const useApplications = () => {
   }, [searchQuery]);
 
   // Fetch applications data
-  const { data: apps = [], isLoading, error, refetch, isRefetching } = useQuery({
-    queryKey: ["applications"],
-    queryFn: async () => {
-      const appsData = await api.applications.getApps();
-      
-      // Transform the data to match our App interface
-      return appsData.map((app): App => ({
-        id: app.id,
-        org_id: app.org_id,
-        name: app.name,
-        description: app.description || "",
-        metadata: app.metadata || {},
-        status: 'active', // Default status since it's not in the API response
-        created_at: new Date(app.created_at),
-        updated_at: new Date(app.updated_at),
-        env_count: 0, // This would need to be fetched separately or included in API
-        secret_count: 0, // This would need to be fetched separately or included in API
-      }));
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 3,
-  });
+  const {
+    data: apps = [],
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = Api.applications.allApplications();
+  // useQuery({
+  //   queryKey: [API_KEYS.ALL_APPLICATIONS],
+  //   queryFn: async () => {
+  //     const appsData = await api.applications.getApps();
+  //     console.log(appsData);
+
+  //     // Transform the data to match our App interface
+  //     return appsData.map(
+  //       (app): App => ({
+  //         id: app.id,
+  //         org_id: app.org_id,
+  //         name: app.name,
+  //         description: app.description || "",
+  //         metadata: app.metadata || {},
+  //         status: "active", // Default status since it's not in the API response
+  //         created_at: new Date(app.created_at),
+  //         updated_at: new Date(app.updated_at),
+  //         env_count: 0, // This would need to be fetched separately or included in API
+  //         secret_count: 0, // This would need to be fetched separately or included in API
+  //       })
+  //     );
+  //   },
+  //   staleTime: 5 * 60 * 1000, // 5 minutes
+  //   retry: 3,
+  // });
 
   // Update application mutation
   const updateAppMutation = useMutation({
-    mutationFn: async ({ appId, data }: { appId: string; data: Partial<App> }) => {
+    mutationFn: async ({
+      appId,
+      data,
+    }: {
+      appId: string;
+      data: Partial<App>;
+    }) => {
       return await api.applications.updateApp(appId, {
         name: data.name,
         description: data.description,
@@ -107,32 +126,33 @@ export const useApplications = () => {
     // Apply search filter
     if (debouncedSearchQuery) {
       const query = debouncedSearchQuery.toLowerCase();
-      filtered = filtered.filter(app => 
-        app.name.toLowerCase().includes(query) ||
-        app.description.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (app) =>
+          app.name.toLowerCase().includes(query) ||
+          app.description.toLowerCase().includes(query)
       );
     }
 
     // Apply status filter
-    if (filterOptions.status !== 'all') {
-      filtered = filtered.filter(app => app.status === filterOptions.status);
+    if (filterOptions.status !== "all") {
+      filtered = filtered.filter((app) => app.status === filterOptions.status);
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: unknown;
+      let bValue: unknown;
 
       switch (filterOptions.sortBy) {
-        case 'name':
+        case "name":
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
           break;
-        case 'created_at':
+        case "created_at":
           aValue = a.created_at.getTime();
           bValue = b.created_at.getTime();
           break;
-        case 'updated_at':
+        case "updated_at":
           aValue = a.updated_at.getTime();
           bValue = b.updated_at.getTime();
           break;
@@ -140,7 +160,7 @@ export const useApplications = () => {
           return 0;
       }
 
-      if (filterOptions.sortOrder === 'asc') {
+      if (filterOptions.sortOrder === "asc") {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
@@ -153,7 +173,7 @@ export const useApplications = () => {
   // Calculate statistics
   const statistics = useMemo((): Statistics => {
     const total = apps.length;
-    const active = apps.filter(app => app.status === 'active').length;
+    const active = apps.filter((app) => app.status === "active").length;
     const inactive = total - active;
     const filtered = filteredAndSortedApps.length;
 
@@ -168,10 +188,12 @@ export const useApplications = () => {
 
   // Check if filters are active
   const hasActiveFilters = useMemo(() => {
-    return debouncedSearchQuery !== "" || 
-           filterOptions.status !== 'all' ||
-           filterOptions.sortBy !== 'updated_at' ||
-           filterOptions.sortOrder !== 'desc';
+    return (
+      debouncedSearchQuery !== "" ||
+      filterOptions.status !== "all" ||
+      filterOptions.sortBy !== "updated_at" ||
+      filterOptions.sortOrder !== "desc"
+    );
   }, [debouncedSearchQuery, filterOptions]);
 
   // Event handlers
@@ -183,14 +205,17 @@ export const useApplications = () => {
     setSearchQuery("");
   }, []);
 
-  const handleFilterChange = useCallback((key: keyof FilterOptions, value: string) => {
-    setFilterOptions(prev => ({ ...prev, [key]: value }));
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: keyof FilterOptions, value: string) => {
+      setFilterOptions((prev) => ({ ...prev, [key]: value }));
+    },
+    []
+  );
 
   const handleSortOrderToggle = useCallback(() => {
-    setFilterOptions(prev => ({
+    setFilterOptions((prev) => ({
       ...prev,
-      sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc'
+      sortOrder: prev.sortOrder === "asc" ? "desc" : "asc",
     }));
   }, []);
 
@@ -204,7 +229,7 @@ export const useApplications = () => {
   }, [refetch]);
 
   const handleCreateProject = useCallback(() => {
-    navigate('/projects/create');
+    navigate("/projects/create");
   }, [navigate]);
 
   // Modal handlers
@@ -224,9 +249,12 @@ export const useApplications = () => {
     setIsDeleteModalOpen(true);
   }, []);
 
-  const handleSaveProject = useCallback((appId: string, data: Partial<App>) => {
-    updateAppMutation.mutate({ appId, data });
-  }, [updateAppMutation]);
+  const handleSaveProject = useCallback(
+    (appId: string, data: Partial<App>) => {
+      updateAppMutation.mutate({ appId, data });
+    },
+    [updateAppMutation]
+  );
 
   const handleConfirmDelete = useCallback(() => {
     if (!selectedApp || deleteConfirmText !== selectedApp.name) return;

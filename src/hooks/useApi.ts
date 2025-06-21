@@ -1,4 +1,4 @@
-import { API_KEYS } from "@/api/constants";
+import { API_KEYS } from "@/constants";
 import { useQueryClient } from "@tanstack/react-query";
 
 /**

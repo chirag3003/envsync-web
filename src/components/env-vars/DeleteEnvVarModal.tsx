@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, Trash2, Shield, Key } from "lucide-react";
-import { EnvironmentVariable, EnvironmentType } from "@/api/constants";
+import { EnvironmentVariable, EnvironmentType } from "@/constants";
 
 interface DeleteEnvVarModalProps {
   open: boolean;
@@ -40,7 +40,9 @@ export const DeleteEnvVarModal = ({
   }, [open]);
 
   // Get environment type info
-  const environmentType = variable ? environmentTypes.find(env => env.id === variable.env_type_id) : null;
+  const environmentType = variable
+    ? environmentTypes.find((env) => env.id === variable.env_type_id)
+    : null;
 
   // Handle delete confirmation
   const handleDelete = useCallback(() => {
@@ -66,15 +68,17 @@ export const DeleteEnvVarModal = ({
             Delete Environment Variable
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            This action cannot be undone. This will permanently delete the environment variable
-            and remove it from all deployments.
+            This action cannot be undone. This will permanently delete the
+            environment variable and remove it from all deployments.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Variable Info */}
           <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-            <h4 className="text-sm font-medium text-white mb-3">Variable Details</h4>
+            <h4 className="text-sm font-medium text-white mb-3">
+              Variable Details
+            </h4>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-400">Key:</span>
@@ -82,27 +86,31 @@ export const DeleteEnvVarModal = ({
                   {variable.key}
                 </code>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-400">Environment:</span>
                 {environmentType && (
                   <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
+                    <div
+                      className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: environmentType.color }}
                     />
-                    <span className="text-sm text-white">{environmentType.name}</span>
+                    <span className="text-sm text-white">
+                      {environmentType.name}
+                    </span>
                   </div>
                 )}
               </div>
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-400">Type:</span>
-                <div className={`flex items-center space-x-1 text-xs px-2 py-1 rounded ${
-                  variable.sensitive
-                    ? "bg-red-900/20 text-red-400"
-                    : "bg-slate-700 text-slate-300"
-                }`}>
+                <div
+                  className={`flex items-center space-x-1 text-xs px-2 py-1 rounded ${
+                    variable.sensitive
+                      ? "bg-red-900/20 text-red-400"
+                      : "bg-slate-700 text-slate-300"
+                  }`}
+                >
                   {variable.sensitive ? (
                     <Shield className="w-3 h-3" />
                   ) : (
@@ -130,7 +138,9 @@ export const DeleteEnvVarModal = ({
                 <ul className="list-disc list-inside space-y-1 text-red-300">
                   <li>Delete the environment variable from all environments</li>
                   <li>Remove it from any active deployments</li>
-                  <li>Clear the variable from build and runtime configurations</li>
+                  <li>
+                    Clear the variable from build and runtime configurations
+                  </li>
                   <li>Remove all associated audit logs and history</li>
                 </ul>
               </div>
@@ -140,14 +150,18 @@ export const DeleteEnvVarModal = ({
           {/* Confirmation Input */}
           <div className="space-y-2">
             <Label htmlFor="delete-confirm" className="text-white">
-              Type <code className="bg-slate-700 px-1 rounded text-red-400">{variable.key}</code> to confirm:
+              Type{" "}
+              <code className="bg-slate-700 px-1 rounded text-red-400">
+                {variable.key}
+              </code>{" "}
+              to confirm:
             </Label>
             <Input
               id="delete-confirm"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               className={`bg-slate-900 border-slate-700 text-white font-mono ${
-                confirmText && !isConfirmValid ? 'border-red-500' : ''
+                confirmText && !isConfirmValid ? "border-red-500" : ""
               }`}
               placeholder="Enter the variable key"
               disabled={isDeleting}

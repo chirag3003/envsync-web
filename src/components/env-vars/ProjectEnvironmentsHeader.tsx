@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  Plus, 
-  RefreshCw, 
-  Upload, 
+import {
+  ArrowLeft,
+  Plus,
+  RefreshCw,
+  Upload,
   Download,
   Settings,
-  Database
+  Database,
 } from "lucide-react";
 
 interface ProjectEnvironmentsHeaderProps {
@@ -49,10 +49,18 @@ export const ProjectEnvironmentsHeader = ({
           size="sm"
           className="text-slate-400 hover:text-white hover:bg-slate-700"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="size-4 mr-1" />
           Back to Projects
         </Button>
         <span className="text-slate-500">/</span>
+        {/* <Button
+          onClick={onBack}
+          variant="ghost"
+          size="sm"
+          className="text-slate-400 hover:text-white hover:bg-slate-700"
+        >
+          {projectName}
+        </Button> */}
         <span className="text-slate-300">{projectName}</span>
         <span className="text-slate-500">/</span>
         <span className="text-white font-medium">Environments</span>
@@ -67,10 +75,12 @@ export const ProjectEnvironmentsHeader = ({
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">{projectName}</h1>
-              <p className="text-slate-400">Environment Variables & Configuration</p>
+              <p className="text-slate-400">
+                Environment Variables & Configuration
+              </p>
             </div>
           </div>
-          
+
           {/* Statistics */}
           <div className="flex items-center space-x-4 mt-3">
             <Badge variant="secondary" className="bg-slate-700 text-slate-300">
@@ -79,7 +89,10 @@ export const ProjectEnvironmentsHeader = ({
             <Badge variant="secondary" className="bg-slate-700 text-slate-300">
               {totalSecrets} Secrets
             </Badge>
-            <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
+            <Badge
+              variant="secondary"
+              className="bg-emerald-500/20 text-emerald-400"
+            >
               {environmentTypes} Environments
             </Badge>
           </div>
@@ -94,7 +107,9 @@ export const ProjectEnvironmentsHeader = ({
             className="text-slate-400 border-slate-600 hover:bg-slate-700"
             disabled={isRefetching}
           >
-            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 ${isRefetching ? "animate-spin" : ""}`}
+            />
           </Button>
 
           <Button

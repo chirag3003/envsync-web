@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
+import {
   Search,
   Filter,
   Eye,
@@ -29,10 +29,11 @@ import {
   Shield,
   Calendar,
   User,
-  X
+  X,
 } from "lucide-react";
-import { EnvironmentVariable, EnvironmentType } from "@/api/constants";;
+import { EnvironmentVariable, EnvironmentType } from "@/constants";
 import { useCopy } from "@/hooks/useClipboard";
+import { parseAsString, useQueryState } from "nuqs";
 
 interface EnvironmentVariablesTableProps {
   variables: EnvironmentVariable[];
@@ -51,12 +52,17 @@ export const EnvironmentVariablesTable = ({
 }: EnvironmentVariablesTableProps) => {
   const copy = useCopy();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedEnvironment, setSelectedEnvironment] = useState<string>("all");
-  const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>({});
+  const [selectedEnvironment, setSelectedEnvironment] = useQueryState(
+    "selected",
+    parseAsString.withDefault("all")
+  );
+  const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>(
+    {}
+  );
 
   // Create environment types map
   const environmentTypesMap = useMemo(() => {
-    return new Map(environmentTypes.map(env => [env.id, env]));
+    return new Map(environmentTypes.map((env) => [env.id, env]));
   }, [environmentTypes]);
 
   // Filter variables
@@ -66,34 +72,37 @@ export const EnvironmentVariablesTable = ({
     // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(variable => 
-        variable.key.toLowerCase().includes(query) ||
-        (!variable.sensitive && variable.value.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        (variable) =>
+          variable.key.toLowerCase().includes(query) ||
+          (!variable.sensitive && variable.value.toLowerCase().includes(query))
       );
     }
 
     // Apply environment filter
     if (selectedEnvironment !== "all") {
-      filtered = filtered.filter(variable => variable.env_type_id === selectedEnvironment);
+      filtered = filtered.filter(
+        (variable) => variable.env_type_id === selectedEnvironment
+      );
     }
 
     return filtered.sort((a, b) => a.key.localeCompare(b.key));
   }, [variables, searchQuery, selectedEnvironment]);
 
   const toggleSensitiveVisibility = (variableId: string) => {
-    setShowSensitive(prev => ({
+    setShowSensitive((prev) => ({
       ...prev,
-      [variableId]: !prev[variableId]
+      [variableId]: !prev[variableId],
     }));
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
@@ -102,13 +111,13 @@ export const EnvironmentVariablesTable = ({
     if (!envType) return null;
 
     return (
-      <Badge 
-        variant="secondary" 
+      <Badge
+        variant="secondary"
         className="text-xs"
-        style={{ 
-          backgroundColor: `${envType.color}20`, 
+        style={{
+          backgroundColor: `${envType.color}20`,
           color: envType.color,
-          borderColor: `${envType.color}40`
+          borderColor: `${envType.color}40`,
         }}
       >
         {envType.name}
@@ -123,7 +132,7 @@ export const EnvironmentVariablesTable = ({
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <CardTitle className="text-white flex items-center">
-            <Key className="w-5 h-5 mr-2 text-emerald-500" />
+            <Key className="size-8 mr-2 bg-emerald-500 border border-emerald-700 p-2 stroke-[3] text-white rounded-md" />
             Environment Variables ({filteredVariables.length})
           </CardTitle>
 
@@ -149,18 +158,27 @@ export const EnvironmentVariablesTable = ({
             </div>
 
             {/* Environment Filter */}
-            <Select value={selectedEnvironment} onValueChange={setSelectedEnvironment}>
+            <Select
+              value={selectedEnvironment}
+              onValueChange={setSelectedEnvironment}
+            >
               <SelectTrigger className="w-48 bg-slate-900 border-slate-700 text-white">
-                <Filter className="w-4 h-4 mr-2" />
+                <Filter className="size-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="all" className="text-white">All Environments</SelectItem>
+                <SelectItem value="all" className="text-white">
+                  All Environments
+                </SelectItem>
                 {environmentTypes.map((envType) => (
-                  <SelectItem key={envType.id} value={envType.id} className="text-white">
+                  <SelectItem
+                    key={envType.id}
+                    value={envType.id}
+                    className="text-white"
+                  >
                     <div className="flex items-center space-x-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
+                      <div
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: envType.color }}
                       />
                       <span>{envType.name}</span>
@@ -177,13 +195,20 @@ export const EnvironmentVariablesTable = ({
           <div className="flex items-center space-x-2 pt-2">
             <span className="text-sm text-slate-400">Active filters:</span>
             {searchQuery && (
-              <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+              <Badge
+                variant="secondary"
+                className="bg-slate-700 text-slate-300"
+              >
                 Search: "{searchQuery}"
               </Badge>
             )}
             {selectedEnvironment !== "all" && (
-              <Badge variant="secondary" className="bg-slate-700 text-slate-300">
-                Environment: {environmentTypesMap.get(selectedEnvironment)?.name}
+              <Badge
+                variant="secondary"
+                className="bg-slate-700 text-slate-300"
+              >
+                Environment:{" "}
+                {environmentTypesMap.get(selectedEnvironment)?.name}
               </Badge>
             )}
             <Button
@@ -206,13 +231,14 @@ export const EnvironmentVariablesTable = ({
           <div className="text-center py-12">
             <Key className="w-12 h-12 text-slate-600 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">
-              {hasActiveFilters ? "No variables found" : "No environment variables"}
+              {hasActiveFilters
+                ? "No variables found"
+                : "No environment variables"}
             </h3>
             <p className="text-slate-400 mb-4">
-              {hasActiveFilters 
+              {hasActiveFilters
                 ? "No variables match your current filters"
-                : "Add your first environment variable to get started"
-              }
+                : "Add your first environment variable to get started"}
             </p>
             {hasActiveFilters && (
               <Button
@@ -232,13 +258,25 @@ export const EnvironmentVariablesTable = ({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-700">
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Key</th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Value</th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Environment</th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Type</th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Updated</th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                    Key
+                  </th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                    Value
+                  </th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                    Environment
+                  </th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                    Type
+                  </th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                    Updated
+                  </th>
                   {canEdit && (
-                    <th className="text-right py-3 px-4 text-slate-400 font-medium">Actions</th>
+                    <th className="text-right py-3 px-4 text-slate-400 font-medium">
+                      Actions
+                    </th>
                   )}
                 </tr>
               </thead>
@@ -269,13 +307,17 @@ export const EnvironmentVariablesTable = ({
                         {variable.sensitive ? (
                           <div className="flex items-center space-x-2">
                             <code className="text-sm font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded flex-1 truncate">
-                              {showSensitive[variable.id] ? variable.value : "••••••••"}
+                              {showSensitive[variable.id]
+                                ? variable.value
+                                : "••••••••"}
                             </code>
                             <Button
                               size="sm"
                               variant="ghost"
                               className="h-6 w-6 p-0 text-slate-400 hover:text-white"
-                              onClick={() => toggleSensitiveVisibility(variable.id)}
+                              onClick={() =>
+                                toggleSensitiveVisibility(variable.id)
+                              }
                             >
                               {showSensitive[variable.id] ? (
                                 <EyeOff className="h-3 w-3" />
@@ -330,7 +372,9 @@ export const EnvironmentVariablesTable = ({
                         ) : (
                           <Key className="w-3 h-3" />
                         )}
-                        <span>{variable.sensitive ? "Secret" : "Variable"}</span>
+                        <span>
+                          {variable.sensitive ? "Secret" : "Variable"}
+                        </span>
                       </Badge>
                     </td>
 
@@ -346,9 +390,8 @@ export const EnvironmentVariablesTable = ({
                         </div>
                       )}
                     </td>
-
                     {canEdit && (
-                      <td className="py-4 px-4">
+                      <td className="p-4 flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
@@ -359,7 +402,10 @@ export const EnvironmentVariablesTable = ({
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-slate-800 border-slate-700" align="end">
+                          <DropdownMenuContent
+                            className="bg-slate-800 border-slate-700"
+                            align="end"
+                          >
                             <DropdownMenuItem
                               className="text-white hover:bg-slate-700 cursor-pointer"
                               onClick={() => onEdit(variable)}

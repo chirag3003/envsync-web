@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Statistics } from "@/api/constants";
+import { Statistics } from "@/constants";
 
 interface ApplicationStatsProps {
   statistics: Statistics;

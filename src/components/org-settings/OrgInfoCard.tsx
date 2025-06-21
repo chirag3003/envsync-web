@@ -2,8 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User } from "lucide-react";
-import { FormData, FormErrors } from "@/api/constants";
+import { Building2, Contact2, User, Users, Users2 } from "lucide-react";
+import { FormData, FormErrors } from "@/constants";
 import { LogoUpload } from "./LogoUpload";
 
 interface OrgInfoCardProps {
@@ -15,6 +15,7 @@ interface OrgInfoCardProps {
   onLogoUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onLogoRemove: () => void;
   onSaveChanges: () => void;
+  onResetChanges: () => void;
   isSaving: boolean;
   logoPreview: string | null;
 }
@@ -28,6 +29,7 @@ export const OrgInfoCard = ({
   onLogoUpload,
   onLogoRemove,
   onSaveChanges,
+  onResetChanges,
   isSaving,
   logoPreview,
 }: OrgInfoCardProps) => {
@@ -36,8 +38,10 @@ export const OrgInfoCard = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <User className="w-5 h-5 text-electric_indigo-500" />
-            <CardTitle className="text-white">Organization Information</CardTitle>
+            <Users2 className="size-8 mr-1 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
+            <CardTitle className="text-white">
+              Organization Information
+            </CardTitle>
           </div>
           {hasUnsavedChanges && (
             <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded">
@@ -54,9 +58,9 @@ export const OrgInfoCard = ({
           <Input
             id="org-name"
             value={formData.name}
-            onChange={(e) => onInputChange('name', e.target.value)}
+            onChange={(e) => onInputChange("name", e.target.value)}
             className={`bg-gray-900 border-gray-700 text-white ${
-              formErrors.name ? 'border-red-500' : ''
+              formErrors.name ? "border-red-500" : ""
             }`}
             placeholder="Enter organization name"
           />
@@ -71,7 +75,7 @@ export const OrgInfoCard = ({
           </Label>
           <Input
             id="slug"
-            value={orgSlug || ''}
+            value={orgSlug || ""}
             className="bg-gray-900 border-gray-700 text-gray-400"
             disabled
             readOnly
@@ -89,9 +93,9 @@ export const OrgInfoCard = ({
             id="contact-email"
             type="email"
             value={formData.contact_email}
-            onChange={(e) => onInputChange('contact_email', e.target.value)}
+            onChange={(e) => onInputChange("contact_email", e.target.value)}
             className={`bg-gray-900 border-gray-700 text-white ${
-              formErrors.contact_email ? 'border-red-500' : ''
+              formErrors.contact_email ? "border-red-500" : ""
             }`}
             placeholder="contact@yourorg.com"
           />
@@ -108,9 +112,9 @@ export const OrgInfoCard = ({
             id="website"
             type="url"
             value={formData.website}
-            onChange={(e) => onInputChange('website', e.target.value)}
+            onChange={(e) => onInputChange("website", e.target.value)}
             className={`bg-gray-900 border-gray-700 text-white ${
-              formErrors.website ? 'border-red-500' : ''
+              formErrors.website ? "border-red-500" : ""
             }`}
             placeholder="https://yourorg.com"
           />
@@ -127,20 +131,30 @@ export const OrgInfoCard = ({
           isUploading={isSaving}
         />
 
-        <Button 
-          className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
-          onClick={onSaveChanges}
-          disabled={isSaving || !hasUnsavedChanges}
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Save Changes"
+        <div className="flex gap-2">
+          <Button
+            className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
+            onClick={onSaveChanges}
+            disabled={isSaving || !hasUnsavedChanges}
+          >
+            {isSaving ? (
+              <>
+                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+          {hasUnsavedChanges && (
+            <Button
+              className="border border-electric_indigo-500 bg-electric_indigo-200 hover:bg-electric_indigo-300 text-white/80"
+              onClick={onResetChanges}
+            >
+              Cancel Changes
+            </Button>
           )}
-        </Button>
+        </div>
       </CardContent>
     </Card>
   );

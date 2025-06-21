@@ -278,7 +278,7 @@ export const ApiKeys = () => {
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
-            <Key className="w-5 h-5 mr-2 text-electric_indigo-500" />
+            <Key className="size-8 mr-3 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
             API Keys
           </CardTitle>
         </CardHeader>

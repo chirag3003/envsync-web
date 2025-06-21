@@ -2,16 +2,16 @@ import { useState, useCallback, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { 
-  FormData, 
-  FormErrors, 
-  INITIAL_FORM_DATA, 
+import {
+  FormData,
+  FormErrors,
+  INITIAL_FORM_DATA,
   INITIAL_FORM_ERRORS,
   MAX_FILE_SIZE,
   ACCEPTED_IMAGE_TYPES,
   MIN_ORG_NAME_LENGTH,
-  EMAIL_REGEX
-} from "@/api/constants";
+  EMAIL_REGEX,
+} from "@/constants";
 
 export const useOrgSettings = () => {
   const { api } = useAuth();
@@ -26,7 +26,12 @@ export const useOrgSettings = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Fetch organization data
-  const { data: orgData, isLoading, error, refetch } = useQuery({
+  const {
+    data: orgData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["organization"],
     queryFn: async () => {
       const data = await api.organizations.getOrg();
@@ -37,7 +42,7 @@ export const useOrgSettings = () => {
   });
 
   // Initialize form data when org data is loaded
-  useEffect(() => {
+  const handleResetChanges = () => {
     if (orgData) {
       const initialData: FormData = {
         name: orgData.name || "",
@@ -45,12 +50,14 @@ export const useOrgSettings = () => {
         website: orgData.website || "",
         logo_url: orgData.logo_url || null,
       };
-      
+
       setFormData(initialData);
       setLogoPreview(orgData.logo_url || null);
       setHasUnsavedChanges(false);
     }
-  }, [orgData]);
+  };
+
+  useEffect(handleResetChanges, [orgData]);
 
   // Form validation
   const validateForm = useCallback((): boolean => {
@@ -82,78 +89,84 @@ export const useOrgSettings = () => {
   }, [formData]);
 
   // Handle logo upload
-  const handleLogoUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleLogoUpload = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    // Validate file type
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      setFormErrors(prev => ({ 
-        ...prev, 
-        logo_url: 'Please select a valid image file (PNG, JPG, GIF, WebP)' 
-      }));
-      return;
-    }
-    
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      setFormErrors(prev => ({ 
-        ...prev, 
-        logo_url: 'File size must be less than 5MB' 
-      }));
-      return;
-    }
+      // Validate file type
+      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+        setFormErrors((prev) => ({
+          ...prev,
+          logo_url: "Please select a valid image file (PNG, JPG, GIF, WebP)",
+        }));
+        return;
+      }
 
-    // Clear any previous errors
-    setFormErrors(prev => ({ ...prev, logo_url: undefined }));
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        setFormErrors((prev) => ({
+          ...prev,
+          logo_url: "File size must be less than 5MB",
+        }));
+        return;
+      }
 
-    try {
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Clear any previous errors
+      setFormErrors((prev) => ({ ...prev, logo_url: undefined }));
 
-      // Upload file
-      const fileData = await api.fileUpload.uploadFile({ file });
+      try {
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setLogoPreview(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
 
-      // Update form data
-      setFormData(prev => ({
-        ...prev,
-        logo_url: fileData.s3_url
-      }));
-      
-      setHasUnsavedChanges(true);
-      toast.success("Logo uploaded successfully");
-    } catch (error) {
-      console.error("Logo upload failed:", error);
-      setFormErrors(prev => ({ 
-        ...prev, 
-        logo_url: 'Failed to upload logo. Please try again.' 
-      }));
-      setLogoPreview(formData.logo_url); // Reset preview
-      toast.error("Failed to upload logo");
-    }
-  }, [api.fileUpload, formData.logo_url]);
+        // Upload file
+        const fileData = await api.fileUpload.uploadFile({ file });
+
+        // Update form data
+        setFormData((prev) => ({
+          ...prev,
+          logo_url: fileData.s3_url,
+        }));
+
+        setHasUnsavedChanges(true);
+        toast.success("Logo uploaded successfully");
+      } catch (error) {
+        console.error("Logo upload failed:", error);
+        setFormErrors((prev) => ({
+          ...prev,
+          logo_url: "Failed to upload logo. Please try again.",
+        }));
+        setLogoPreview(formData.logo_url); // Reset preview
+        toast.error("Failed to upload logo");
+      }
+    },
+    [api.fileUpload, formData.logo_url]
+  );
 
   // Handle logo removal
   const handleLogoRemove = useCallback(() => {
     setLogoPreview(null);
-    setFormData(prev => ({ ...prev, logo_url: null }));
+    setFormData((prev) => ({ ...prev, logo_url: null }));
     setHasUnsavedChanges(true);
   }, []);
 
   // Handle form input changes
-  const handleInputChange = useCallback((field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setHasUnsavedChanges(true);
-    
-    // Clear field error when user starts typing
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [formErrors]);
+  const handleInputChange = useCallback(
+    (field: keyof FormData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setHasUnsavedChanges(true);
+
+      // Clear field error when user starts typing
+      if (formErrors[field]) {
+        setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [formErrors]
+  );
 
   // Mutation to update organization settings
   const updateOrgMutation = useMutation({
@@ -182,7 +195,7 @@ export const useOrgSettings = () => {
     onSuccess: () => {
       toast.success("Organization deleted successfully");
       // Redirect to appropriate page after deletion
-      window.location.href = '/';
+      window.location.href = "/";
     },
     onError: (error) => {
       console.error("Failed to delete organization:", error);
@@ -210,7 +223,7 @@ export const useOrgSettings = () => {
       toast.error("Organization name does not match");
       return;
     }
-    
+
     deleteOrgMutation.mutate();
   }, [deleteConfirmText, orgData?.name, deleteOrgMutation]);
 
@@ -253,6 +266,7 @@ export const useOrgSettings = () => {
     handleOpenDeleteModal,
     handleCloseDeleteModal,
     handleDeleteOrg,
+    handleResetChanges,
 
     // Loading states
     isSaving: updateOrgMutation.isPending,

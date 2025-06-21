@@ -5,7 +5,7 @@ import {
   RegenerateApiKeyResponse,
   UpdateApiKeyRequest,
 } from "@envsync-cloud/envsync-ts-sdk";
-import { API_KEYS } from "./constants";
+import { API_KEYS } from "../constants";
 import { useInvalidateQueries } from "@/hooks/useApi";
 
 const useApiKeys = () => {

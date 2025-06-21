@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Database, Save, X } from "lucide-react";
-import { App } from "@/api/constants";
+import { App } from "@/constants";
 
 interface EditAppFormData {
   name: string;
@@ -61,7 +61,8 @@ export const EditAppModal = ({
   isSaving,
 }: EditAppModalProps) => {
   const [formData, setFormData] = useState<EditAppFormData>(INITIAL_FORM_DATA);
-  const [formErrors, setFormErrors] = useState<EditAppFormErrors>(INITIAL_FORM_ERRORS);
+  const [formErrors, setFormErrors] =
+    useState<EditAppFormErrors>(INITIAL_FORM_ERRORS);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Initialize form data when app changes
@@ -99,15 +100,18 @@ export const EditAppModal = ({
   }, [formData]);
 
   // Handle form input changes
-  const handleInputChange = useCallback((field: keyof EditAppFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setHasUnsavedChanges(true);
-    
-    // Clear field error when user starts typing
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [formErrors]);
+  const handleInputChange = useCallback(
+    (field: keyof EditAppFormData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setHasUnsavedChanges(true);
+
+      // Clear field error when user starts typing
+      if (formErrors[field]) {
+        setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [formErrors]
+  );
 
   // Handle form submission
   const handleSave = useCallback(() => {
@@ -130,7 +134,7 @@ export const EditAppModal = ({
       );
       if (!confirmClose) return;
     }
-    
+
     onOpenChange(false);
     setFormData(INITIAL_FORM_DATA);
     setFormErrors(INITIAL_FORM_ERRORS);
@@ -167,7 +171,7 @@ export const EditAppModal = ({
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               className={`bg-slate-900 border-slate-700 text-white ${
-                formErrors.name ? 'border-red-500' : ''
+                formErrors.name ? "border-red-500" : ""
               }`}
               placeholder="Enter project name"
               disabled={isSaving}
@@ -187,7 +191,7 @@ export const EditAppModal = ({
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
               className={`bg-slate-900 border-slate-700 text-white ${
-                formErrors.description ? 'border-red-500' : ''
+                formErrors.description ? "border-red-500" : ""
               }`}
               placeholder="Enter project description (optional)"
               rows={3}
@@ -216,7 +220,11 @@ export const EditAppModal = ({
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
                 {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="text-white hover:bg-slate-700">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-white hover:bg-slate-700"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -266,4 +274,3 @@ export const EditAppModal = ({
     </Dialog>
   );
 };
-

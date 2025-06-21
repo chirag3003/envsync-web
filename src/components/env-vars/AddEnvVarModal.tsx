@@ -20,16 +20,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Shield, Key } from "lucide-react";
-import { 
-  EnvVarFormData, 
-  EnvVarFormErrors, 
+import {
+  EnvVarFormData,
+  EnvVarFormErrors,
   EnvironmentType,
   INITIAL_ENV_VAR_FORM,
   INITIAL_ENV_FORM_ERRORS,
   ENV_VAR_KEY_REGEX,
   MAX_KEY_LENGTH,
-  MAX_VALUE_LENGTH
-} from "@/api/constants";
+  MAX_VALUE_LENGTH,
+} from "@/constants";
 
 interface AddEnvVarModalProps {
   open: boolean;
@@ -46,8 +46,11 @@ export const AddEnvVarModal = ({
   onSave,
   isSaving,
 }: AddEnvVarModalProps) => {
-  const [formData, setFormData] = useState<EnvVarFormData>(INITIAL_ENV_VAR_FORM);
-  const [formErrors, setFormErrors] = useState<EnvVarFormErrors>(INITIAL_ENV_FORM_ERRORS);
+  const [formData, setFormData] =
+    useState<EnvVarFormData>(INITIAL_ENV_VAR_FORM);
+  const [formErrors, setFormErrors] = useState<EnvVarFormErrors>(
+    INITIAL_ENV_FORM_ERRORS
+  );
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -65,7 +68,8 @@ export const AddEnvVarModal = ({
     if (!formData.key.trim()) {
       errors.key = "Variable key is required";
     } else if (!ENV_VAR_KEY_REGEX.test(formData.key)) {
-      errors.key = "Key must start with a letter and contain only uppercase letters, numbers, and underscores";
+      errors.key =
+        "Key must start with a letter and contain only uppercase letters, numbers, and underscores";
     } else if (formData.key.length > MAX_KEY_LENGTH) {
       errors.key = `Key must be less than ${MAX_KEY_LENGTH} characters`;
     }
@@ -87,14 +91,17 @@ export const AddEnvVarModal = ({
   }, [formData]);
 
   // Handle form input changes
-  const handleInputChange = useCallback((field: keyof EnvVarFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear field error when user starts typing
-    if (formErrors[field as keyof EnvVarFormErrors]) {
-      setFormErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [formErrors]);
+  const handleInputChange = useCallback(
+    (field: keyof EnvVarFormData, value: string | boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // Clear field error when user starts typing
+      if (formErrors[field as keyof EnvVarFormErrors]) {
+        setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [formErrors]
+  );
 
   // Handle form submission
   const handleSave = useCallback(() => {
@@ -121,7 +128,8 @@ export const AddEnvVarModal = ({
             Add Environment Variable
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            Create a new environment variable for your project. Variables can be regular values or sensitive secrets.
+            Create a new environment variable for your project. Variables can be
+            regular values or sensitive secrets.
           </DialogDescription>
         </DialogHeader>
 
@@ -136,17 +144,23 @@ export const AddEnvVarModal = ({
               onValueChange={(value) => handleInputChange("env_type_id", value)}
               disabled={isSaving}
             >
-              <SelectTrigger className={`bg-slate-900 border-slate-700 text-white ${
-                formErrors.env_type_id ? 'border-red-500' : ''
-              }`}>
+              <SelectTrigger
+                className={`bg-slate-900 border-slate-700 text-white ${
+                  formErrors.env_type_id ? "border-red-500" : ""
+                }`}
+              >
                 <SelectValue placeholder="Select environment type" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
                 {environmentTypes.map((envType) => (
-                  <SelectItem key={envType.id} value={envType.id} className="text-white hover:bg-slate-700">
+                  <SelectItem
+                    key={envType.id}
+                    value={envType.id}
+                    className="text-white hover:bg-slate-700"
+                  >
                     <div className="flex items-center space-x-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
+                      <div
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: envType.color }}
                       />
                       <span>{envType.name}</span>
@@ -168,9 +182,11 @@ export const AddEnvVarModal = ({
             <Input
               id="var-key"
               value={formData.key}
-              onChange={(e) => handleInputChange("key", e.target.value.toUpperCase())}
+              onChange={(e) =>
+                handleInputChange("key", e.target.value.toUpperCase())
+              }
               className={`bg-slate-900 border-slate-700 text-white font-mono ${
-                formErrors.key ? 'border-red-500' : ''
+                formErrors.key ? "border-red-500" : ""
               }`}
               placeholder="DATABASE_URL"
               disabled={isSaving}
@@ -180,7 +196,8 @@ export const AddEnvVarModal = ({
               <p className="text-red-400 text-sm">{formErrors.key}</p>
             )}
             <p className="text-xs text-slate-400">
-              Must start with a letter and contain only uppercase letters, numbers, and underscores
+              Must start with a letter and contain only uppercase letters,
+              numbers, and underscores
             </p>
           </div>
 
@@ -194,7 +211,7 @@ export const AddEnvVarModal = ({
               value={formData.value}
               onChange={(e) => handleInputChange("value", e.target.value)}
               className={`bg-slate-900 border-slate-700 text-white font-mono min-h-[100px] ${
-                formErrors.value ? 'border-red-500' : ''
+                formErrors.value ? "border-red-500" : ""
               }`}
               placeholder="Enter the variable value..."
               disabled={isSaving}
@@ -205,7 +222,9 @@ export const AddEnvVarModal = ({
             )}
             <div className="flex justify-between text-xs text-slate-400">
               <span>Value will be stored securely</span>
-              <span>{formData.value.length}/{MAX_VALUE_LENGTH}</span>
+              <span>
+                {formData.value.length}/{MAX_VALUE_LENGTH}
+              </span>
             </div>
           </div>
 
@@ -214,12 +233,17 @@ export const AddEnvVarModal = ({
             <Checkbox
               id="sensitive"
               checked={formData.sensitive}
-              onCheckedChange={(checked) => handleInputChange("sensitive", checked as boolean)}
+              onCheckedChange={(checked) =>
+                handleInputChange("sensitive", checked as boolean)
+              }
               disabled={isSaving}
               className="border-slate-600"
             />
             <div className="flex-1">
-              <Label htmlFor="sensitive" className="text-white flex items-center cursor-pointer">
+              <Label
+                htmlFor="sensitive"
+                className="text-white flex items-center cursor-pointer"
+              >
                 {formData.sensitive ? (
                   <Shield className="w-4 h-4 text-red-400 mr-2" />
                 ) : (
@@ -228,10 +252,9 @@ export const AddEnvVarModal = ({
                 Mark as sensitive (secret)
               </Label>
               <p className="text-xs text-slate-400 mt-1">
-                {formData.sensitive 
+                {formData.sensitive
                   ? "This value will be encrypted and hidden by default"
-                  : "This value will be visible to team members with access"
-                }
+                  : "This value will be visible to team members with access"}
               </p>
             </div>
           </div>
@@ -249,19 +272,20 @@ export const AddEnvVarModal = ({
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-slate-400">Value:</span>
                 <code className="text-sm font-mono text-slate-300 bg-slate-800 px-2 py-1 rounded">
-                  {formData.sensitive 
-                    ? "••••••••" 
-                    : (formData.value || "variable_value")
-                  }
+                  {formData.sensitive
+                    ? "••••••••"
+                    : formData.value || "variable_value"}
                 </code>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-slate-400">Type:</span>
-                <span className={`text-xs px-2 py-1 rounded ${
-                  formData.sensitive 
-                    ? "bg-red-900/20 text-red-400" 
-                    : "bg-slate-700 text-slate-300"
-                }`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded ${
+                    formData.sensitive
+                      ? "bg-red-900/20 text-red-400"
+                      : "bg-slate-700 text-slate-300"
+                  }`}
+                >
                   {formData.sensitive ? "Secret" : "Variable"}
                 </span>
               </div>
@@ -281,7 +305,12 @@ export const AddEnvVarModal = ({
           <Button
             onClick={handleSave}
             className="bg-emerald-500 hover:bg-emerald-600 text-white"
-            disabled={isSaving || !formData.key || !formData.value || !formData.env_type_id}
+            disabled={
+              isSaving ||
+              !formData.key ||
+              !formData.value ||
+              !formData.env_type_id
+            }
           >
             {isSaving ? (
               <>

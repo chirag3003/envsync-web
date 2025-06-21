@@ -21,7 +21,7 @@ export const AccountSettingsCard = ({
     <Card className="bg-gray-800 border-gray-700">
       <CardHeader>
         <div className="flex items-center space-x-2">
-          <Bell className="w-5 h-5 text-electric_indigo-500" />
+          <Bell className="size-8 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
           <CardTitle className="text-white">Account Settings</CardTitle>
         </div>
       </CardHeader>
@@ -68,16 +68,18 @@ export const AccountSettingsCard = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-900 p-3 rounded-lg">
               <div className="text-lg font-bold text-white">
-                {userData?.created_at ? 
-                  Math.floor((Date.now() - new Date(userData.created_at).getTime()) / (1000 * 60 * 60 * 24))
-                  : 0
-                }
+                {userData?.created_at
+                  ? Math.floor(
+                      (Date.now() - new Date(userData.created_at).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  : 0}
               </div>
               <div className="text-xs text-gray-400">Days Active</div>
             </div>
             <div className="bg-gray-900 p-3 rounded-lg">
               <div className="text-lg font-bold text-white">
-                {userData?.id ? userData.id.substring(0, 8) : 'N/A'}
+                {userData?.id ? userData.id.substring(0, 8) : "N/A"}
               </div>
               <div className="text-xs text-gray-400">User ID</div>
             </div>

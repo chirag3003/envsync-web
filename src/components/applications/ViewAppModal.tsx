@@ -7,18 +7,19 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Database, 
-  Calendar, 
-  User, 
-  Globe, 
-  Key, 
-  Shield, 
+import {
+  Database,
+  Calendar,
+  User,
+  Globe,
+  Key,
+  Shield,
   Edit,
   ExternalLink,
-  Copy
+  Copy,
+  Info,
 } from "lucide-react";
-import { App } from "@/api/constants";
+import { App } from "@/constants";
 import { useCopy } from "@/hooks/useClipboard";
 import { useNavigate } from "react-router-dom";
 
@@ -39,17 +40,17 @@ export const ViewAppModal = ({
 }: ViewAppModalProps) => {
   const copy = useCopy();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   if (!app) return null;
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
     }).format(date);
   };
@@ -81,15 +82,15 @@ export const ViewAppModal = ({
           {/* Status and Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Badge 
-                variant="secondary" 
+              <Badge
+                variant="secondary"
                 className={`${
-                  app.status === 'active' 
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
-                    : 'bg-slate-600 text-slate-300 border-slate-500'
+                  app.status === "active"
+                    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                    : "bg-slate-600 text-slate-300 border-slate-500"
                 } border`}
               >
-                {app.status || 'active'}
+                {app.status || "active"}
               </Badge>
               <div className="flex items-center space-x-4 text-sm text-slate-400">
                 <div className="flex items-center space-x-1">
@@ -131,17 +132,17 @@ export const ViewAppModal = ({
                   Project ID
                 </h4>
                 <div className="flex items-center space-x-2">
-                  <code className="text-sm font-mono text-slate-300 bg-slate-900 px-3 py-2 rounded flex-1">
+                  <code className="text-sm select-all font-mono text-slate-300 bg-slate-900 px-3 py-2 rounded flex-1">
                     {app.id}
                   </code>
-                  <Button
+                  {/* <Button
                     size="sm"
                     variant="ghost"
                     className="text-slate-400 hover:text-white"
                     onClick={handleCopyId}
                   >
                     <Copy className="w-4 h-4" />
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
 
@@ -157,7 +158,7 @@ export const ViewAppModal = ({
             </div>
 
             <div className="space-y-4">
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <h4 className="text-white font-medium flex items-center">
                   <User className="w-4 h-4 mr-2" />
                   Organization
@@ -165,6 +166,25 @@ export const ViewAppModal = ({
                 <p className="text-slate-300 bg-slate-900 p-3 rounded">
                   {app.org_id}
                 </p>
+              </div> */}
+              <div className="space-y-2">
+                <h4 className="text-white font-medium flex items-center">
+                  <User className="w-4 h-4 mr-2" />
+                  Organization
+                </h4>
+                <div className="flex items-center space-x-2">
+                  <code className="text-sm select-all font-mono text-slate-300 bg-slate-900 px-3 py-2 rounded flex-1">
+                    {app.org_id}
+                  </code>
+                  {/* <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-slate-400 hover:text-white"
+                    onClick={handleCopyId}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button> */}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -192,8 +212,9 @@ export const ViewAppModal = ({
           )}
 
           {/* Quick Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-            <div className="text-sm text-slate-400">
+          <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-700">
+            <div className="text-xs text-slate-400">
+              <Info className="inline-block mr-1" size={16} />
               Manage environment variables and configurations for this project
             </div>
             <Button

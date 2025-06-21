@@ -9,7 +9,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, X, Filter, SortAsc, SortDesc } from "lucide-react";
-import { FilterOptions, STATUS_OPTIONS, SORT_OPTIONS, Statistics } from "@/api/constants";
+import {
+  FilterOptions,
+  STATUS_OPTIONS,
+  SORT_OPTIONS,
+  Statistics,
+} from "@/constants";
 
 interface ApplicationsFiltersProps {
   searchQuery: string;
@@ -34,10 +39,11 @@ export const ApplicationsFilters = ({
   onSortOrderToggle,
   onResetFilters,
 }: ApplicationsFiltersProps) => {
-  const hasActiveFilters = searchQuery || 
-    filterOptions.status !== 'all' || 
-    filterOptions.sortBy !== 'updated_at' || 
-    filterOptions.sortOrder !== 'desc';
+  const hasActiveFilters =
+    searchQuery ||
+    filterOptions.status !== "all" ||
+    filterOptions.sortBy !== "updated_at" ||
+    filterOptions.sortOrder !== "desc";
 
   return (
     <Card className="bg-slate-800 border-slate-700">
@@ -68,7 +74,7 @@ export const ApplicationsFilters = ({
           <div className="w-full lg:w-48">
             <Select
               value={filterOptions.status}
-              onValueChange={(value) => onFilterChange('status', value)}
+              onValueChange={(value) => onFilterChange("status", value)}
             >
               <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
                 <Filter className="w-4 h-4 mr-2" />
@@ -76,7 +82,11 @@ export const ApplicationsFilters = ({
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
                 {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="text-white">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-white"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -88,14 +98,18 @@ export const ApplicationsFilters = ({
           <div className="w-full lg:w-48">
             <Select
               value={filterOptions.sortBy}
-              onValueChange={(value) => onFilterChange('sortBy', value)}
+              onValueChange={(value) => onFilterChange("sortBy", value)}
             >
               <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
                 {SORT_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="text-white">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-white"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -109,9 +123,11 @@ export const ApplicationsFilters = ({
             variant="outline"
             size="sm"
             className="text-slate-400 border-slate-600 hover:bg-slate-700"
-            title={`Sort ${filterOptions.sortOrder === 'asc' ? 'ascending' : 'descending'}`}
+            title={`Sort ${
+              filterOptions.sortOrder === "asc" ? "ascending" : "descending"
+            }`}
           >
-            {filterOptions.sortOrder === 'asc' ? (
+            {filterOptions.sortOrder === "asc" ? (
               <SortAsc className="w-4 h-4" />
             ) : (
               <SortDesc className="w-4 h-4" />
@@ -132,14 +148,14 @@ export const ApplicationsFilters = ({
         </div>
 
         {/* Results Summary */}
-        {(debouncedSearchQuery || filterOptions.status !== 'all') && (
+        {(debouncedSearchQuery || filterOptions.status !== "all") && (
           <div className="mt-4 pt-4 border-t border-slate-700">
             <p className="text-sm text-slate-400">
               Showing {statistics.filtered} of {statistics.total} projects
               {debouncedSearchQuery && (
                 <span> matching "{debouncedSearchQuery}"</span>
               )}
-              {filterOptions.status !== 'all' && (
+              {filterOptions.status !== "all" && (
                 <span> with status "{filterOptions.status}"</span>
               )}
             </p>

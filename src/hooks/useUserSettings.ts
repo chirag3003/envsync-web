@@ -30,14 +30,20 @@ export const useUserSettings = () => {
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
-  
+
   // Dialog states
-  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = useState(false);
-  const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] = useState(false);
+  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] =
+    useState(false);
+  const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
+    useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   // Fetch user data
-  const { data: userData, isLoading, error } = useQuery({
+  const {
+    data: userData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["userInfo"],
     queryFn: async () => {
       const { user: userData } = await api.authentication.whoami();
@@ -47,20 +53,22 @@ export const useUserSettings = () => {
     retry: 3,
   });
 
-  // Initialize form data when user data is loaded
-  useEffect(() => {
+  const handleResetChanges = () => {
     if (userData) {
       const initialData = {
         name: userData.full_name || "",
         email: userData.email || "",
         profile_picture_url: userData.profile_picture_url || null,
       };
-      
+
       setFormData(initialData);
       setLogoPreview(userData.profile_picture_url || null);
       setHasUnsavedChanges(false);
     }
-  }, [userData]);
+  };
+
+  // Initialize form data when user data is loaded
+  useEffect(handleResetChanges, [userData]);
 
   // Form validation
   const validateForm = useCallback((): boolean => {
@@ -83,75 +91,88 @@ export const useUserSettings = () => {
   }, [formData]);
 
   // Handle profile picture upload
-  const handleLogoUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleLogoUpload = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setFormErrors(prev => ({ ...prev, profile_picture_url: 'Please select an image file' }));
-      return;
-    }
-    
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setFormErrors(prev => ({ ...prev, profile_picture_url: 'File size must be less than 5MB' }));
-      return;
-    }
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setFormErrors((prev) => ({
+          ...prev,
+          profile_picture_url: "Please select an image file",
+        }));
+        return;
+      }
 
-    // Clear any previous errors
-    setFormErrors(prev => ({ ...prev, profile_picture_url: undefined }));
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormErrors((prev) => ({
+          ...prev,
+          profile_picture_url: "File size must be less than 5MB",
+        }));
+        return;
+      }
 
-    try {
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Clear any previous errors
+      setFormErrors((prev) => ({ ...prev, profile_picture_url: undefined }));
 
-      // Upload file
-      const fileData = await api.fileUpload.uploadFile({ file });
+      try {
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setLogoPreview(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
 
-      // Update form data
-      setFormData(prev => ({
-        ...prev,
-        profile_picture_url: fileData.s3_url
-      }));
-      
-      setHasUnsavedChanges(true);
-    } catch (error) {
-      console.error("Profile picture upload failed:", error);
-      setFormErrors(prev => ({ 
-        ...prev, 
-        profile_picture_url: 'Failed to upload profile picture. Please try again.' 
-      }));
-      setLogoPreview(formData.profile_picture_url);
-    }
-  }, [api.fileUpload, formData.profile_picture_url]);
+        // Upload file
+        const fileData = await api.fileUpload.uploadFile({ file });
+
+        // Update form data
+        setFormData((prev) => ({
+          ...prev,
+          profile_picture_url: fileData.s3_url,
+        }));
+
+        setHasUnsavedChanges(true);
+      } catch (error) {
+        console.error("Profile picture upload failed:", error);
+        setFormErrors((prev) => ({
+          ...prev,
+          profile_picture_url:
+            "Failed to upload profile picture. Please try again.",
+        }));
+        setLogoPreview(formData.profile_picture_url);
+      }
+    },
+    [api.fileUpload, formData.profile_picture_url]
+  );
 
   // Handle profile picture removal
   const handleLogoRemove = useCallback(() => {
     setLogoPreview(null);
-    setFormData(prev => ({ ...prev, profile_picture_url: null }));
+    setFormData((prev) => ({ ...prev, profile_picture_url: null }));
     setHasUnsavedChanges(true);
-    
+
     // Clear file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   }, []);
 
   // Handle form input changes
-  const handleInputChange = useCallback((field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setHasUnsavedChanges(true);
-    
-    // Clear field error when user starts typing
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [formErrors]);
+  const handleInputChange = useCallback(
+    (field: keyof FormData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setHasUnsavedChanges(true);
+
+      // Clear field error when user starts typing
+      if (formErrors[field]) {
+        setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [formErrors]
+  );
 
   // Mutation to update user settings
   const updateUserSettings = useMutation({
@@ -192,7 +213,7 @@ export const useUserSettings = () => {
     },
     onSuccess: () => {
       console.log("User account deleted successfully");
-      window.location.href = '/login';
+      window.location.href = "/login";
     },
     onError: (error) => {
       console.error("Failed to delete user account:", error);
@@ -222,7 +243,7 @@ export const useUserSettings = () => {
     if (deleteConfirmText !== userData?.email) {
       return;
     }
-    
+
     deleteUserMutation.mutate();
     setIsDeleteAccountDialogOpen(false);
   }, [deleteConfirmText, userData?.email, deleteUserMutation]);
@@ -232,28 +253,28 @@ export const useUserSettings = () => {
     userData,
     isLoading,
     error,
-    
+
     // Form state
     formData,
     formErrors,
     hasUnsavedChanges,
     logoPreview,
     emailNotifications,
-    
+
     // Dialog states
     isPasswordResetDialogOpen,
     isDeleteAccountDialogOpen,
     deleteConfirmText,
-    
+
     // Refs
     fileInputRef,
-    
+
     // Setters
     setEmailNotifications,
     setIsPasswordResetDialogOpen,
     setIsDeleteAccountDialogOpen,
     setDeleteConfirmText,
-    
+
     // Handlers
     handleInputChange,
     handleLogoUpload,
@@ -261,12 +282,13 @@ export const useUserSettings = () => {
     handleSaveChanges,
     handleResetPassword,
     handleDeleteUser,
-    
+    handleResetChanges,
+
     // Mutations
     updateUserSettings,
     resetPasswordMutation,
     deleteUserMutation,
-    
+
     // Validation
     validateForm,
   };

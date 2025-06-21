@@ -65,33 +65,56 @@ export const Users = () => {
   }, [emailAddress, selectedRoleId, validateInviteForm, inviteUserMutation]);
 
   const handleDeleteUser = useCallback(() => {
-    if (!selectedUserId || deleteUserMutation.isPending || actionLoadingStates[selectedUserId]) return;
+    if (
+      !selectedUserId ||
+      deleteUserMutation.isPending ||
+      actionLoadingStates[selectedUserId]
+    )
+      return;
 
     deleteUserMutation.mutate(selectedUserId);
   }, [selectedUserId, deleteUserMutation, actionLoadingStates]);
 
   const handleEditUserRole = useCallback(() => {
-    if (!selectedUserId || !validateEditForm() || editUserRoleMutation.isPending || actionLoadingStates[selectedUserId]) return;
+    if (
+      !selectedUserId ||
+      !validateEditForm() ||
+      editUserRoleMutation.isPending ||
+      actionLoadingStates[selectedUserId]
+    )
+      return;
 
     editUserRoleMutation.mutate({
       userId: selectedUserId,
       roleId: selectedRoleId,
     });
-  }, [selectedUserId, selectedRoleId, validateEditForm, editUserRoleMutation, actionLoadingStates]);
+  }, [
+    selectedUserId,
+    selectedRoleId,
+    validateEditForm,
+    editUserRoleMutation,
+    actionLoadingStates,
+  ]);
 
-  const handleOpenEditModal = useCallback((user: User) => {
-    setSelectedUserId(user.id);
-    setSelectedUserName(user.name);
-    setSelectedRoleId(user.roleId);
-    setFormErrors({});
-    setShowEditRoleModalOpen(true);
-  }, [setSelectedUserId, setSelectedUserName, setSelectedRoleId, setFormErrors]);
+  const handleOpenEditModal = useCallback(
+    (user: User) => {
+      setSelectedUserId(user.id);
+      setSelectedUserName(user.name);
+      setSelectedRoleId(user.roleId);
+      setFormErrors({});
+      setShowEditRoleModalOpen(true);
+    },
+    [setSelectedUserId, setSelectedUserName, setSelectedRoleId, setFormErrors]
+  );
 
-  const handleOpenDeleteModal = useCallback((user: User) => {
-    setSelectedUserId(user.id);
-    setSelectedUserName(user.name);
-    setShowDeleteUserModalOpen(true);
-  }, [setSelectedUserId, setSelectedUserName]);
+  const handleOpenDeleteModal = useCallback(
+    (user: User) => {
+      setSelectedUserId(user.id);
+      setSelectedUserName(user.name);
+      setShowDeleteUserModalOpen(true);
+    },
+    [setSelectedUserId, setSelectedUserName]
+  );
 
   const handleCloseInviteModal = useCallback(() => {
     setShowInviteUserModalOpen(false);
@@ -108,27 +131,16 @@ export const Users = () => {
     resetDeleteForm();
   }, [resetDeleteForm]);
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="size-12 border-4 border-t-emerald-500 border-slate-700 rounded-full animate-spin"></div>
-          <div className="text-slate-400">Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
-  const { is_admin, is_master } = user.role;
-  const canManageUsers = is_admin || is_master;
-
-  if (isLoading) {
+  if (isLoading || !user) {
     return <UsersLoadingPage />;
   }
 
   if (error) {
     return <UsersErrorPage />;
   }
+
+  const { is_admin, is_master } = user.role;
+  const canManageUsers = is_admin || is_master;
 
   return (
     <div className="space-y-6">
@@ -145,7 +157,7 @@ export const Users = () => {
             onClick={() => setShowInviteUserModalOpen(true)}
             disabled={inviteUserMutation.isPending}
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="size-4 mr-2" />
             Invite Member
           </Button>
         )}
@@ -175,7 +187,10 @@ export const Users = () => {
         setSelectedRoleId={setSelectedRoleId}
         roles={roles}
         formErrors={formErrors}
-        isLoading={editUserRoleMutation.isPending || (selectedUserId ? actionLoadingStates[selectedUserId] : false)}
+        isLoading={
+          editUserRoleMutation.isPending ||
+          (selectedUserId ? actionLoadingStates[selectedUserId] : false)
+        }
         onSave={handleEditUserRole}
         onClose={handleCloseEditModal}
       />
@@ -185,7 +200,10 @@ export const Users = () => {
         open={showDeleteUserModalOpen}
         onOpenChange={setShowDeleteUserModalOpen}
         selectedUserName={selectedUserName}
-        isLoading={deleteUserMutation.isPending || (selectedUserId ? actionLoadingStates[selectedUserId] : false)}
+        isLoading={
+          deleteUserMutation.isPending ||
+          (selectedUserId ? actionLoadingStates[selectedUserId] : false)
+        }
         onDelete={handleDeleteUser}
         onClose={handleCloseDeleteModal}
       />

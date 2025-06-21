@@ -1,7 +1,7 @@
 import { ApplicationCard } from "./ApplicationCard";
 import { EmptyState } from "./EmptyState";
 import { NoResultsState } from "./NoResultsState";
-import { App } from "@/api/constants";
+import { App } from "@/constants";
 
 interface ApplicationsGridProps {
   apps: App[];
@@ -38,13 +38,8 @@ export const ApplicationsGrid = ({
         />
       );
     }
-    
-    return (
-      <EmptyState
-        canEdit={canEdit}
-        onCreateProject={onCreateProject}
-      />
-    );
+
+    return <EmptyState canEdit={canEdit} onCreateProject={onCreateProject} />;
   }
 
   return (

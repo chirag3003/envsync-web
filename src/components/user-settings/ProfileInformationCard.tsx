@@ -27,6 +27,7 @@ interface ProfileInformationCardProps {
   onLogoUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onLogoRemove: () => void;
   onSaveChanges: () => void;
+  onResetChanges: () => void;
   isLoading: boolean;
 }
 
@@ -40,6 +41,7 @@ export const ProfileInformationCard = ({
   onLogoUpload,
   onLogoRemove,
   onSaveChanges,
+  onResetChanges,
   isLoading,
 }: ProfileInformationCardProps) => {
   return (
@@ -47,7 +49,7 @@ export const ProfileInformationCard = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <User className="w-5 h-5 text-electric_indigo-500" />
+            <User className="size-8 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
             <CardTitle className="text-white">Profile Information</CardTitle>
           </div>
           {hasUnsavedChanges && (
@@ -67,7 +69,7 @@ export const ProfileInformationCard = ({
             value={formData.name}
             onChange={(e) => onInputChange("name", e.target.value)}
             className={`bg-gray-900 border-gray-700 text-white ${
-              formErrors.name ? 'border-red-500' : ''
+              formErrors.name ? "border-red-500" : ""
             }`}
             placeholder="Enter your full name"
           />
@@ -86,7 +88,7 @@ export const ProfileInformationCard = ({
             value={formData.email}
             onChange={(e) => onInputChange("email", e.target.value)}
             className={`bg-gray-900 border-gray-700 text-white ${
-              formErrors.email ? 'border-red-500' : ''
+              formErrors.email ? "border-red-500" : ""
             }`}
             placeholder="Enter your email address"
           />
@@ -104,20 +106,30 @@ export const ProfileInformationCard = ({
           disabled={isLoading}
         />
 
-        <Button 
-          className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
-          onClick={onSaveChanges}
-          disabled={isLoading || !hasUnsavedChanges}
-        >
-          {isLoading ? (
-            <>
-              <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Save Changes"
+        <div className="flex gap-2">
+          <Button
+            className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
+            onClick={onSaveChanges}
+            disabled={isLoading || !hasUnsavedChanges}
+          >
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+          {hasUnsavedChanges && (
+            <Button
+              className="border border-electric_indigo-500 bg-electric_indigo-200 hover:bg-electric_indigo-300 text-white/80"
+              onClick={onResetChanges}
+            >
+              Cancel Changes
+            </Button>
           )}
-        </Button>
+        </div>
       </CardContent>
     </Card>
   );

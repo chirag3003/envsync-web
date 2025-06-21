@@ -10,23 +10,20 @@ import { BulkImportModal } from "@/components/env-vars/BulkImportModal";
 import { ProjectEnvironmentsLoadingPage } from "./loading";
 import { ProjectEnvironmentsErrorPage } from "./error";
 import { useProjectEnvironments } from "@/hooks/useProjectEnvironments";
-import { 
-  EnvironmentVariable, 
-  EnvVarFormData, 
-  BulkEnvVarData 
-} from "@/api/constants";
+import {
+  EnvironmentVariable,
+  EnvVarFormData,
+  BulkEnvVarData,
+} from "@/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const ProjectEnvironments = () => {
-    const { user } = useAuth();
-    const { projectNameId } = useParams();
-    const navigate = useNavigate();
-    
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { projectNameId } = useParams();
 
-    const onBack = useCallback(() => {
-        window.history.back();
-    }, []);
+  const onBack = () => navigate("/");
 
   const {
     // Data
@@ -35,13 +32,13 @@ export const ProjectEnvironments = () => {
     environmentVariables,
     isLoading,
     error,
-    
+
     // Mutations
     createVariable,
     updateVariable,
     deleteVariable,
     bulkImportVariables,
-    
+
     // Utility functions
     refetch,
   } = useProjectEnvironments(projectNameId);
@@ -51,50 +48,66 @@ export const ProjectEnvironments = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
-  const [selectedVariable, setSelectedVariable] = useState<EnvironmentVariable | null>(null);
+  const [selectedVariable, setSelectedVariable] =
+    useState<EnvironmentVariable | null>(null);
 
   // Event handlers
-  const handleAddVariable = useCallback((data: EnvVarFormData) => {
-    createVariable.mutate(data, {
-      onSuccess: () => {
-        setShowAddModal(false);
-      }
-    });
-  }, [createVariable]);
+  const handleAddVariable = useCallback(
+    (data: EnvVarFormData) => {
+      createVariable.mutate(data, {
+        onSuccess: () => {
+          setShowAddModal(false);
+        },
+      });
+    },
+    [createVariable]
+  );
 
-  const handleEditVariable = useCallback((variableId: string, data: Partial<EnvVarFormData>) => {
-    updateVariable.mutate({ variableId, data }, {
-      onSuccess: () => {
-        setShowEditModal(false);
-        setSelectedVariable(null);
-      }
-    });
-  }, [updateVariable]);
-
-  const handleDeleteVariable = useCallback((
-    env_type_id: string,
-    key: string,
-    projectNameId: string
+  const handleEditVariable = (
+    variableId: string,
+    data: Partial<EnvVarFormData>
   ) => {
-    deleteVariable.mutate({
-        env_type_id,
-        key,
-        projectNameId
-    }, {
-      onSuccess: () => {
-        setShowDeleteModal(false);
-        setSelectedVariable(null);
+    console.log(data);
+    updateVariable.mutate(
+      { variableId, data },
+      {
+        onSuccess: () => {
+          setShowEditModal(false);
+          setSelectedVariable(null);
+        },
       }
-    });
-  }, [deleteVariable]);
+    );
+  };
 
-  const handleBulkImport = useCallback((data: BulkEnvVarData) => {
-    bulkImportVariables.mutate(data, {
-      onSuccess: () => {
-        setShowBulkImportModal(false);
-      }
-    });
-  }, [bulkImportVariables]);
+  const handleDeleteVariable = useCallback(
+    (env_type_id: string, key: string, projectNameId: string) => {
+      deleteVariable.mutate(
+        {
+          env_type_id,
+          key,
+          projectNameId,
+        },
+        {
+          onSuccess: () => {
+            setShowDeleteModal(false);
+            setSelectedVariable(null);
+          },
+        }
+      );
+    },
+    [deleteVariable]
+  );
+
+  const handleBulkImport = useCallback(
+    (data: BulkEnvVarData) => {
+      bulkImportVariables.mutate(data, {
+        onSuccess: () => {
+          setShowBulkImportModal(false);
+        },
+      });
+    },
+    [bulkImportVariables]
+  );
 
   const handleEditClick = useCallback((variable: EnvironmentVariable) => {
     setSelectedVariable(variable);
@@ -125,16 +138,30 @@ export const ProjectEnvironments = () => {
   }
 
   if (error) {
-    return <ProjectEnvironmentsErrorPage error={error} onRetry={handleRetry} onBack={onBack} />;
+    return (
+      <ProjectEnvironmentsErrorPage
+        error={error}
+        onRetry={handleRetry}
+        onBack={onBack}
+      />
+    );
   }
 
-  if (!project) {
+  if (!project?.name) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-white mb-2">Project not found</h3>
-          <p className="text-slate-400 mb-4">The requested project could not be found.</p>
-          <Button onClick={onBack} variant="outline" className="text-white border-slate-600 hover:bg-slate-700">
+          <h3 className="text-lg font-semibold text-white mb-2">
+            Project not found
+          </h3>
+          <p className="text-slate-400 mb-4">
+            The requested project could not be found.
+          </p>
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="text-white border-slate-600 hover:bg-slate-700"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
           </Button>
@@ -148,7 +175,12 @@ export const ProjectEnvironments = () => {
       {/* Header */}
       <ProjectEnvironmentsHeader
         environmentTypes={environmentTypes.length}
-        isRefetching={createVariable.isPending || updateVariable.isPending || deleteVariable.isPending || bulkImportVariables.isPending}
+        isRefetching={
+          createVariable.isPending ||
+          updateVariable.isPending ||
+          deleteVariable.isPending ||
+          bulkImportVariables.isPending
+        }
         projectName={project.name}
         totalSecrets={0}
         totalVariables={environmentVariables.length}
@@ -159,7 +191,7 @@ export const ProjectEnvironments = () => {
         onExport={() => console.log("Export functionality not implemented yet")}
         onRefresh={handleRetry}
         onManageEnvironments={() => {
-            navigate(`/projects/${projectNameId}/manage-environments`);
+          navigate(`/projects/${projectNameId}/manage-environments`);
         }}
       />
 
@@ -169,7 +201,7 @@ export const ProjectEnvironments = () => {
         environmentTypes={environmentTypes}
         onEdit={handleEditClick}
         onDelete={handleDeleteClick}
-        canEdit={user.role.can_edit}        
+        canEdit={user.role.can_edit}
       />
 
       {/* Add Variable Modal */}

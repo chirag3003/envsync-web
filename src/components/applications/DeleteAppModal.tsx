@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, Trash2 } from "lucide-react";
-import { App } from "@/api/constants";
+import { App } from "@/constants";
 
 interface DeleteAppModalProps {
   open: boolean;
@@ -44,17 +44,20 @@ export const DeleteAppModal = ({
             Delete Project
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            Are you sure you want to delete <strong className="text-white">{app.name}</strong>?
-            This action cannot be undone.
+            Are you sure you want to delete{" "}
+            <strong className="text-white">{app.name}</strong>? This action
+            cannot be undone.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
             <div className="flex items-start space-x-3">
               <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-red-200">
-                <p className="font-medium mb-1">This will permanently delete:</p>
+                <p className="font-medium mb-1">
+                  This will permanently delete:
+                </p>
                 <ul className="list-disc list-inside space-y-1 text-red-300">
                   <li>The project and all its configurations</li>
                   <li>All environment variables and secrets</li>
@@ -68,7 +71,11 @@ export const DeleteAppModal = ({
 
           <div className="space-y-2">
             <Label htmlFor="delete-confirm" className="text-white">
-              Type <code className="bg-slate-700 px-1 rounded text-red-400">{app.name}</code> to confirm:
+              Type{" "}
+              <code className="bg-slate-700 px-1 rounded text-red-400">
+                {app.name}
+              </code>{" "}
+              to confirm:
             </Label>
             <Input
               id="delete-confirm"

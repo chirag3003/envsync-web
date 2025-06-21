@@ -22,9 +22,17 @@ export const Index = () => {
         <Route path="/" element={<RootLayout />}>
           <Route index element={<Applications />} />
           <Route path="applications" element={<Applications />} />
+
           <Route path="projects/create" element={<CreateProject />} />
-          <Route path="projects/:projectNameId" element={<ProjectEnvironments />} />
-          <Route path="projects/:projectNameId/manage-environments" element={<ManageEnvironment />} />
+          <Route
+            path="projects/:projectNameId"
+            element={<ProjectEnvironments />}
+          />
+          <Route
+            path="projects/:projectNameId/manage-environments"
+            element={<ManageEnvironment />}
+          />
+
           <Route path="users" element={<Users />} />
           <Route path="settings" element={<UserSettings />} />
           <Route path="organisation" element={<OrgSettings />} />

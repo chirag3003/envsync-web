@@ -19,24 +19,24 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Upload, 
-  FileText, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Upload,
+  FileText,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
   Shield,
   Key,
-  Info
+  Info,
 } from "lucide-react";
-import { 
-  BulkEnvVarData, 
+import {
+  BulkEnvVarData,
   EnvironmentType,
   BULK_IMPORT_EXAMPLE,
   ENV_VAR_KEY_REGEX,
   MAX_KEY_LENGTH,
-  MAX_VALUE_LENGTH
-} from "@/api/constants";
+  MAX_VALUE_LENGTH,
+} from "@/constants";
 
 interface ParsedVariable {
   key: string;
@@ -84,18 +84,18 @@ export const BulkImportModal = ({
       return;
     }
 
-    const lines = importText.split('\n');
+    const lines = importText.split("\n");
     const parsed: ParsedVariable[] = [];
 
     lines.forEach((line, index) => {
       const trimmedLine = line.trim();
-      
+
       // Skip empty lines and comments
-      if (!trimmedLine || trimmedLine.startsWith('#')) {
+      if (!trimmedLine || trimmedLine.startsWith("#")) {
         return;
       }
 
-      const equalIndex = trimmedLine.indexOf('=');
+      const equalIndex = trimmedLine.indexOf("=");
       if (equalIndex === -1) {
         parsed.push({
           key: trimmedLine,
@@ -103,7 +103,7 @@ export const BulkImportModal = ({
           sensitive: false,
           line: index + 1,
           valid: false,
-          error: "Missing '=' separator"
+          error: "Missing '=' separator",
         });
         return;
       }
@@ -112,7 +112,7 @@ export const BulkImportModal = ({
       const value = trimmedLine.substring(equalIndex + 1).trim();
 
       // Remove quotes if present
-      const cleanValue = value.replace(/^["']|["']$/g, '');
+      const cleanValue = value.replace(/^["']|["']$/g, "");
 
       // Validate key
       let error: string | undefined;
@@ -137,10 +137,17 @@ export const BulkImportModal = ({
 
       // Determine if sensitive (common secret patterns)
       const sensitivePatterns = [
-        /secret/i, /password/i, /token/i, /key/i, /auth/i, 
-        /credential/i, /private/i, /jwt/i, /api_key/i
+        /secret/i,
+        /password/i,
+        /token/i,
+        /key/i,
+        /auth/i,
+        /credential/i,
+        /private/i,
+        /jwt/i,
+        /api_key/i,
       ];
-      const sensitive = sensitivePatterns.some(pattern => pattern.test(key));
+      const sensitive = sensitivePatterns.some((pattern) => pattern.test(key));
 
       parsed.push({
         key: key.toUpperCase(),
@@ -148,7 +155,7 @@ export const BulkImportModal = ({
         sensitive,
         line: index + 1,
         valid,
-        error
+        error,
       });
     });
 
@@ -159,16 +166,16 @@ export const BulkImportModal = ({
   const handleImport = useCallback(() => {
     if (!selectedEnvType || isImporting) return;
 
-    const validVariables = parsedVariables.filter(v => v.valid);
+    const validVariables = parsedVariables.filter((v) => v.valid);
     if (validVariables.length === 0) return;
 
     const importData: BulkEnvVarData = {
       env_type_id: selectedEnvType,
-      variables: validVariables.map(v => ({
+      variables: validVariables.map((v) => ({
         key: v.key,
         value: v.value,
-        sensitive: v.sensitive
-      }))
+        sensitive: v.sensitive,
+      })),
     };
 
     onImport(importData);
@@ -185,8 +192,8 @@ export const BulkImportModal = ({
     setActiveTab("preview");
   }, []);
 
-  const validVariables = parsedVariables.filter(v => v.valid);
-  const invalidVariables = parsedVariables.filter(v => !v.valid);
+  const validVariables = parsedVariables.filter((v) => v.valid);
+  const invalidVariables = parsedVariables.filter((v) => !v.valid);
   const canImport = selectedEnvType && validVariables.length > 0;
 
   return (
@@ -198,7 +205,8 @@ export const BulkImportModal = ({
             Bulk Import Environment Variables
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            Import multiple environment variables at once using key=value format.
+            Import multiple environment variables at once using key=value
+            format.
           </DialogDescription>
         </DialogHeader>
 
@@ -218,10 +226,14 @@ export const BulkImportModal = ({
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
                 {environmentTypes.map((envType) => (
-                  <SelectItem key={envType.id} value={envType.id} className="text-white hover:bg-slate-700">
+                  <SelectItem
+                    key={envType.id}
+                    value={envType.id}
+                    className="text-white hover:bg-slate-700"
+                  >
                     <div className="flex items-center space-x-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
+                      <div
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: envType.color }}
                       />
                       <span>{envType.name}</span>
@@ -233,12 +245,22 @@ export const BulkImportModal = ({
           </div>
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-2 bg-slate-900">
-              <TabsTrigger value="input" className="text-slate-400 data-[state=active]:text-white">
+              <TabsTrigger
+                value="input"
+                className="text-slate-400 data-[state=active]:text-white"
+              >
                 Input
               </TabsTrigger>
-              <TabsTrigger value="preview" className="text-slate-400 data-[state=active]:text-white">
+              <TabsTrigger
+                value="preview"
+                className="text-slate-400 data-[state=active]:text-white"
+              >
                 Preview ({parsedVariables.length})
               </TabsTrigger>
             </TabsList>
@@ -275,7 +297,7 @@ PORT=3000`}
                 />
                 <div className="flex justify-between text-xs text-slate-400">
                   <span>Use KEY=value format, one per line</span>
-                  <span>{importText.split('\n').length} lines</span>
+                  <span>{importText.split("\n").length} lines</span>
                 </div>
               </div>
 
@@ -286,11 +308,27 @@ PORT=3000`}
                   <div className="text-sm text-slate-300">
                     <p className="font-medium mb-2">Format Guidelines:</p>
                     <ul className="list-disc list-inside space-y-1 text-slate-400">
-                      <li>Use <code className="bg-slate-800 px-1 rounded">KEY=value</code> format</li>
-                      <li>Keys must be uppercase with underscores (A-Z, 0-9, _)</li>
+                      <li>
+                        Use{" "}
+                        <code className="bg-slate-800 px-1 rounded">
+                          KEY=value
+                        </code>{" "}
+                        format
+                      </li>
+                      <li>
+                        Keys must be uppercase with underscores (A-Z, 0-9, _)
+                      </li>
                       <li>Lines starting with # are treated as comments</li>
-                      <li>Values with spaces can be quoted: <code className="bg-slate-800 px-1 rounded">KEY="value with spaces"</code></li>
-                      <li>Variables with sensitive keywords will be marked as secrets automatically</li>
+                      <li>
+                        Values with spaces can be quoted:{" "}
+                        <code className="bg-slate-800 px-1 rounded">
+                          KEY="value with spaces"
+                        </code>
+                      </li>
+                      <li>
+                        Variables with sensitive keywords will be marked as
+                        secrets automatically
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -302,17 +340,25 @@ PORT=3000`}
                 <div className="text-center py-8">
                   <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                   <p className="text-slate-400">No variables to preview</p>
-                  <p className="text-slate-500 text-sm">Enter variables in the Input tab to see the preview</p>
+                  <p className="text-slate-500 text-sm">
+                    Enter variables in the Input tab to see the preview
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Summary */}
                   <div className="flex items-center space-x-4">
-                    <Badge variant="secondary" className="bg-green-900/20 text-green-400">
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-900/20 text-green-400"
+                    >
                       {validVariables.length} Valid
                     </Badge>
                     {invalidVariables.length > 0 && (
-                      <Badge variant="secondary" className="bg-red-900/20 text-red-400">
+                      <Badge
+                        variant="secondary"
+                        className="bg-red-900/20 text-red-400"
+                      >
                         {invalidVariables.length} Invalid
                       </Badge>
                     )}
@@ -323,16 +369,29 @@ PORT=3000`}
                     <table className="w-full">
                       <thead className="bg-slate-900 sticky top-0">
                         <tr>
-                          <th className="text-left py-2 px-3 text-slate-400 text-sm">Status</th>
-                          <th className="text-left py-2 px-3 text-slate-400 text-sm">Key</th>
-                          <th className="text-left py-2 px-3 text-slate-400 text-sm">Value</th>
-                          <th className="text-left py-2 px-3 text-slate-400 text-sm">Type</th>
-                          <th className="text-left py-2 px-3 text-slate-400 text-sm">Line</th>
+                          <th className="text-left py-2 px-3 text-slate-400 text-sm">
+                            Status
+                          </th>
+                          <th className="text-left py-2 px-3 text-slate-400 text-sm">
+                            Key
+                          </th>
+                          <th className="text-left py-2 px-3 text-slate-400 text-sm">
+                            Value
+                          </th>
+                          <th className="text-left py-2 px-3 text-slate-400 text-sm">
+                            Type
+                          </th>
+                          <th className="text-left py-2 px-3 text-slate-400 text-sm">
+                            Line
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {parsedVariables.map((variable, index) => (
-                          <tr key={index} className="border-b border-slate-700 hover:bg-slate-750">
+                          <tr
+                            key={index}
+                            className="border-b border-slate-700 hover:bg-slate-750"
+                          >
                             <td className="py-2 px-3">
                               {variable.valid ? (
                                 <CheckCircle className="w-4 h-4 text-green-400" />
@@ -341,37 +400,49 @@ PORT=3000`}
                               )}
                             </td>
                             <td className="py-2 px-3">
-                              <code className={`text-sm font-mono px-2 py-1 rounded ${
-                                variable.valid 
-                                  ? "text-emerald-400 bg-slate-900" 
-                                  : "text-red-400 bg-red-900/20"
-                              }`}>
+                              <code
+                                className={`text-sm font-mono px-2 py-1 rounded ${
+                                  variable.valid
+                                    ? "text-emerald-400 bg-slate-900"
+                                    : "text-red-400 bg-red-900/20"
+                                }`}
+                              >
                                 {variable.key || "INVALID"}
                               </code>
                             </td>
                             <td className="py-2 px-3">
                               <code className="text-sm font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded max-w-xs truncate block">
-                                {variable.sensitive ? "••••••••" : (variable.value || "MISSING")}
+                                {variable.sensitive
+                                  ? "••••••••"
+                                  : variable.value || "MISSING"}
                               </code>
                             </td>
                             <td className="py-2 px-3">
-                              <div className={`flex items-center space-x-1 text-xs px-2 py-1 rounded w-fit ${
-                                variable.sensitive
-                                  ? "bg-red-900/20 text-red-400"
-                                  : "bg-slate-700 text-slate-300"
-                              }`}>
+                              <div
+                                className={`flex items-center space-x-1 text-xs px-2 py-1 rounded w-fit ${
+                                  variable.sensitive
+                                    ? "bg-red-900/20 text-red-400"
+                                    : "bg-slate-700 text-slate-300"
+                                }`}
+                              >
                                 {variable.sensitive ? (
                                   <Shield className="w-3 h-3" />
                                 ) : (
                                   <Key className="w-3 h-3" />
                                 )}
-                                <span>{variable.sensitive ? "Secret" : "Variable"}</span>
+                                <span>
+                                  {variable.sensitive ? "Secret" : "Variable"}
+                                </span>
                               </div>
                             </td>
                             <td className="py-2 px-3">
-                              <span className="text-sm text-slate-400">{variable.line}</span>
+                              <span className="text-sm text-slate-400">
+                                {variable.line}
+                              </span>
                               {variable.error && (
-                                <div className="text-xs text-red-400 mt-1">{variable.error}</div>
+                                <div className="text-xs text-red-400 mt-1">
+                                  {variable.error}
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -387,16 +458,22 @@ PORT=3000`}
                         <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                         <div className="text-sm text-red-200">
                           <p className="font-medium mb-1">
-                            {invalidVariables.length} variable{invalidVariables.length > 1 ? 's' : ''} will be skipped:
+                            {invalidVariables.length} variable
+                            {invalidVariables.length > 1 ? "s" : ""} will be
+                            skipped:
                           </p>
                           <ul className="list-disc list-inside space-y-1 text-red-300">
-                            {invalidVariables.slice(0, 3).map((variable, index) => (
-                              <li key={index}>
-                                Line {variable.line}: {variable.error}
-                              </li>
-                            ))}
+                            {invalidVariables
+                              .slice(0, 3)
+                              .map((variable, index) => (
+                                <li key={index}>
+                                  Line {variable.line}: {variable.error}
+                                </li>
+                              ))}
                             {invalidVariables.length > 3 && (
-                              <li>... and {invalidVariables.length - 3} more</li>
+                              <li>
+                                ... and {invalidVariables.length - 3} more
+                              </li>
                             )}
                           </ul>
                         </div>
@@ -431,7 +508,8 @@ PORT=3000`}
             ) : (
               <>
                 <Upload className="w-4 h-4 mr-2" />
-                Import {validVariables.length} Variable{validVariables.length !== 1 ? 's' : ''}
+                Import {validVariables.length} Variable
+                {validVariables.length !== 1 ? "s" : ""}
               </>
             )}
           </Button>

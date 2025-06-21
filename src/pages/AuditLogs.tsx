@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Calendar, 
-  User, 
-  Search, 
-  Filter, 
-  Download, 
-  X, 
-  RefreshCw, 
+import {
+  Calendar,
+  User,
+  Search,
+  Filter,
+  Download,
+  X,
+  RefreshCw,
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
@@ -80,77 +80,109 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 const DEBOUNCE_DELAY = 300;
 
 const DEFAULT_FILTER_OPTIONS: FilterOptions = {
-  action: 'all',
-  user: 'all',
-  timeRange: '24h',
-  resourceType: 'all',
+  action: "all",
+  user: "all",
+  timeRange: "24h",
+  resourceType: "all",
 };
 
 const TIME_RANGE_OPTIONS = [
-  { value: '1h', label: 'Last hour' },
-  { value: '24h', label: 'Last 24 hours' },
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '90d', label: 'Last 90 days' },
-  { value: 'custom', label: 'Custom range' },
+  { value: "1h", label: "Last hour" },
+  { value: "24h", label: "Last 24 hours" },
+  { value: "7d", label: "Last 7 days" },
+  { value: "30d", label: "Last 30 days" },
+  { value: "90d", label: "Last 90 days" },
+  { value: "custom", label: "Custom range" },
 ] as const;
 
 const RESOURCE_TYPE_OPTIONS = [
-  { value: 'all', label: 'All Resources' },
-  { value: 'app', label: 'Applications' },
-  { value: 'env', label: 'Environments' },
-  { value: 'user', label: 'Users' },
-  { value: 'org', label: 'Organization' },
-  { value: 'api_key', label: 'API Keys' },
-  { value: 'cli', label: 'CLI' },
+  { value: "all", label: "All Resources" },
+  { value: "app", label: "Applications" },
+  { value: "env", label: "Environments" },
+  { value: "user", label: "Users" },
+  { value: "org", label: "Organization" },
+  { value: "api_key", label: "API Keys" },
+  { value: "cli", label: "CLI" },
 ] as const;
 
 // Action categorization for better UX
 const ACTION_CATEGORIES = {
-  create: ['app_created', 'env_created', 'envs_batch_created', 'org_created', 'user_invite_created'],
-  update: ['app_updated', 'env_updated', 'envs_batch_updated', 'org_updated', 'user_updated', 'user_role_updated', 'user_invite_updated'],
-  delete: ['app_deleted', 'env_deleted', 'user_deleted', 'user_invite_deleted'],
-  view: ['app_viewed', 'apps_viewed', 'env_type_viewed', 'env_types_viewed', 'env_viewed', 'envs_viewed', 'user_invite_viewed', 'users_retrieved', 'user_retrieved', 'get_audit_logs'],
-  auth: ['user_invite_accepted', 'password_update_requested'],
-  cli: ['cli_command_executed'],
+  create: [
+    "app_created",
+    "env_created",
+    "envs_batch_created",
+    "org_created",
+    "user_invite_created",
+  ],
+  update: [
+    "app_updated",
+    "env_updated",
+    "envs_batch_updated",
+    "org_updated",
+    "user_updated",
+    "user_role_updated",
+    "user_invite_updated",
+  ],
+  delete: ["app_deleted", "env_deleted", "user_deleted", "user_invite_deleted"],
+  view: [
+    "app_viewed",
+    "apps_viewed",
+    "env_type_viewed",
+    "env_types_viewed",
+    "env_viewed",
+    "envs_viewed",
+    "user_invite_viewed",
+    "users_retrieved",
+    "user_retrieved",
+    "get_audit_logs",
+  ],
+  auth: ["user_invite_accepted", "password_update_requested"],
+  cli: ["cli_command_executed"],
 } as const;
 
 export const AuditLogs = () => {
   const { api } = useAuth();
 
-   // Helper function to generate page numbers for pagination
-  const generatePageNumbers = useCallback((currentPage: number, totalPages: number) => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
+  // Helper function to generate page numbers for pagination
+  const generatePageNumbers = useCallback(
+    (currentPage: number, totalPages: number) => {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
 
-    for (let i = Math.max(2, currentPage - delta); 
-         i <= Math.min(totalPages - 1, currentPage + delta); 
-         i++) {
-      range.push(i);
-    }
+      for (
+        let i = Math.max(2, currentPage - delta);
+        i <= Math.min(totalPages - 1, currentPage + delta);
+        i++
+      ) {
+        range.push(i);
+      }
 
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
+      if (currentPage - delta > 2) {
+        rangeWithDots.push(1, "...");
+      } else {
+        rangeWithDots.push(1);
+      }
 
-    rangeWithDots.push(...range);
+      rangeWithDots.push(...range);
 
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
+      if (currentPage + delta < totalPages - 1) {
+        rangeWithDots.push("...", totalPages);
+      } else if (totalPages > 1) {
+        rangeWithDots.push(totalPages);
+      }
 
-    return rangeWithDots;
-  }, []);
+      return rangeWithDots;
+    },
+    []
+  );
 
   // State management
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>(DEFAULT_FILTER_OPTIONS);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>(
+    DEFAULT_FILTER_OPTIONS
+  );
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -164,7 +196,7 @@ export const AuditLogs = () => {
       setDebouncedSearchQuery(searchQuery);
       // Reset to first page when search changes
       if (searchQuery !== debouncedSearchQuery) {
-        setPagination(prev => ({ ...prev, page: 1 }));
+        setPagination((prev) => ({ ...prev, page: 1 }));
       }
     }, DEBOUNCE_DELAY);
 
@@ -173,23 +205,23 @@ export const AuditLogs = () => {
 
   // Reset pagination when filters change
   useEffect(() => {
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   }, [filterOptions, debouncedSearchQuery]);
 
   // Fetch audit logs with pagination and filters
-  const { 
-    data: auditLogsData, 
-    isLoading, 
-    error, 
+  const {
+    data: auditLogsData,
+    isLoading,
+    error,
     refetch,
-    isRefetching 
+    isRefetching,
   } = useQuery({
     queryKey: [
-      "audit-logs", 
-      pagination.page, 
-      pagination.pageSize, 
-      debouncedSearchQuery, 
-      filterOptions
+      "audit-logs",
+      pagination.page,
+      pagination.pageSize,
+      debouncedSearchQuery,
+      filterOptions,
     ],
     queryFn: async () => {
       try {
@@ -200,30 +232,33 @@ export const AuditLogs = () => {
         });
 
         if (debouncedSearchQuery) {
-          params.append('search', debouncedSearchQuery);
+          params.append("search", debouncedSearchQuery);
         }
 
-        if (filterOptions.action !== 'all') {
-          params.append('action', filterOptions.action);
+        if (filterOptions.action !== "all") {
+          params.append("action", filterOptions.action);
         }
 
-        if (filterOptions.user !== 'all') {
-          params.append('user_id', filterOptions.user);
+        if (filterOptions.user !== "all") {
+          params.append("user_id", filterOptions.user);
         }
 
-        if (filterOptions.timeRange !== 'all') {
+        if (filterOptions.timeRange !== "all") {
           const timeRange = getTimeRangeFilter(filterOptions.timeRange);
-          if (timeRange.start) params.append('start_date', timeRange.start);
-          if (timeRange.end) params.append('end_date', timeRange.end);
+          if (timeRange.start) params.append("start_date", timeRange.start);
+          if (timeRange.end) params.append("end_date", timeRange.end);
         }
 
-        if (filterOptions.resourceType !== 'all') {
-          params.append('resource_type', filterOptions.resourceType);
+        if (filterOptions.resourceType !== "all") {
+          params.append("resource_type", filterOptions.resourceType);
         }
 
         // Fetch audit logs and users data
         const [auditLogsResponse, usersResponse] = await Promise.all([
-          api.auditLogs.getAuditLogs(pagination.page.toString(), pagination.pageSize.toString()),
+          api.auditLogs.getAuditLogs(
+            pagination.page.toString(),
+            pagination.pageSize.toString()
+          ),
           api.users.getUsers(),
         ]);
 
@@ -234,7 +269,8 @@ export const AuditLogs = () => {
         const logs: AuditLog[] = auditLogsResponse.auditLogs.map((log) => ({
           id: log.id,
           action: log.action as AuditActions,
-          details: log.details || getActionDescription(log.action as AuditActions),
+          details:
+            log.details || getActionDescription(log.action as AuditActions),
           user: usersMap.get(log.user_id)?.full_name || "Unknown User",
           user_id: log.user_id,
           timestamp: new Date(log.created_at).toLocaleString(),
@@ -244,7 +280,7 @@ export const AuditLogs = () => {
           environment: JSON.parse(log.details).env_type_id,
           resource_type: getResourceTypeFromAction(log.action as AuditActions),
           resource_id: "",
-          ip_address:  "",
+          ip_address: "",
           user_agent: "",
         }));
 
@@ -252,7 +288,7 @@ export const AuditLogs = () => {
         const totalCount = auditLogsResponse.totalPages; // This should come from API
         const totalPages = Math.ceil(totalCount / pagination.pageSize);
 
-        setPagination(prev => ({
+        setPagination((prev) => ({
           ...prev,
           total: totalCount,
           totalPages: totalPages,
@@ -284,19 +320,19 @@ export const AuditLogs = () => {
     const start = new Date();
 
     switch (timeRange) {
-      case '1h':
+      case "1h":
         start.setHours(now.getHours() - 1);
         break;
-      case '24h':
+      case "24h":
         start.setDate(now.getDate() - 1);
         break;
-      case '7d':
+      case "7d":
         start.setDate(now.getDate() - 7);
         break;
-      case '30d':
+      case "30d":
         start.setDate(now.getDate() - 30);
         break;
-      case '90d':
+      case "90d":
         start.setDate(now.getDate() - 90);
         break;
       default:
@@ -355,86 +391,100 @@ export const AuditLogs = () => {
       cli_command_executed: "Executed CLI command",
     };
 
-    return descriptions[action] || action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return (
+      descriptions[action] ||
+      action.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    );
   }, []);
 
-  const getResourceTypeFromAction = useCallback((action: AuditActions): string => {
-    if (action.startsWith('app_')) return 'app';
-    if (action.startsWith('env_')) return 'env';
-    if (action.startsWith('user_')) return 'user';
-    if (action.startsWith('org_')) return 'org';
-    if (action.startsWith('cli_')) return 'cli';
-    return 'system';
-  }, []);
+  const getResourceTypeFromAction = useCallback(
+    (action: AuditActions): string => {
+      if (action.startsWith("app_")) return "app";
+      if (action.startsWith("env_")) return "env";
+      if (action.startsWith("user_")) return "user";
+      if (action.startsWith("org_")) return "org";
+      if (action.startsWith("cli_")) return "cli";
+      return "system";
+    },
+    []
+  );
 
-  const getActionCategory = useCallback((action: AuditActions): keyof typeof ACTION_CATEGORIES => {
-    for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
-      // @ts-ignore
-      if (actions.includes(action as any)) {
-        return category as keyof typeof ACTION_CATEGORIES;
+  const getActionCategory = useCallback(
+    (action: AuditActions): keyof typeof ACTION_CATEGORIES => {
+      for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+        if (actions.includes(action as never)) {
+          return category as keyof typeof ACTION_CATEGORIES;
+        }
       }
-    }
-    return 'view';
-  }, []);
+      return "view";
+    },
+    []
+  );
 
-  const getActionBadgeColor = useCallback((action: AuditActions): string => {
-    const category = getActionCategory(action);
-    
-    switch (category) {
-      case "create":
-        return "bg-green-900 text-green-300 border-green-800";
-      case "update":
-        return "bg-blue-900 text-blue-300 border-blue-800";
-      case "delete":
-        return "bg-red-900 text-red-300 border-red-800";
-      case "view":
-        return "bg-gray-700 text-gray-300 border-gray-600";
-      case "auth":
-        return "bg-purple-900 text-purple-300 border-purple-800";
-      case "cli":
-        return "bg-yellow-900 text-yellow-300 border-yellow-800";
-      default:
-        return "bg-gray-700 text-gray-300 border-gray-600";
-    }
-  }, [getActionCategory]);
+  const getActionBadgeColor = useCallback(
+    (action: AuditActions): string => {
+      const category = getActionCategory(action);
 
-  const getActionIcon = useCallback((action: AuditActions): JSX.Element => {
-    const category = getActionCategory(action);
-    const iconClass = "w-3 h-3";
+      switch (category) {
+        case "create":
+          return "bg-green-900 text-green-300 border-green-800";
+        case "update":
+          return "bg-blue-900 text-blue-300 border-blue-800";
+        case "delete":
+          return "bg-red-900 text-red-300 border-red-800";
+        case "view":
+          return "bg-gray-700 text-gray-300 border-gray-600";
+        case "auth":
+          return "bg-purple-900 text-purple-300 border-purple-800";
+        case "cli":
+          return "bg-yellow-900 text-yellow-300 border-yellow-800";
+        default:
+          return "bg-gray-700 text-gray-300 border-gray-600";
+      }
+    },
+    [getActionCategory]
+  );
 
-    switch (category) {
-      case "create":
-        return <Plus className={iconClass} />;
-      case "update":
-        return <Edit className={iconClass} />;
-      case "delete":
-        return <Trash2 className={iconClass} />;
-      case "view":
-        return <Eye className={iconClass} />;
-      case "auth":
-        return <Shield className={iconClass} />;
-      case "cli":
-        return <Terminal className={iconClass} />;
-      default:
-        return <Activity className={iconClass} />;
-    }
-  }, [getActionCategory]);
+  const getActionIcon = useCallback(
+    (action: AuditActions): JSX.Element => {
+      const category = getActionCategory(action);
+      const iconClass = "w-3 h-3";
+
+      switch (category) {
+        case "create":
+          return <Plus className={iconClass} />;
+        case "update":
+          return <Edit className={iconClass} />;
+        case "delete":
+          return <Trash2 className={iconClass} />;
+        case "view":
+          return <Eye className={iconClass} />;
+        case "auth":
+          return <Shield className={iconClass} />;
+        case "cli":
+          return <Terminal className={iconClass} />;
+        default:
+          return <Activity className={iconClass} />;
+      }
+    },
+    [getActionCategory]
+  );
 
   const getResourceIcon = useCallback((resourceType: string): JSX.Element => {
     const iconClass = "w-4 h-4";
 
     switch (resourceType) {
-      case 'app':
+      case "app":
         return <Database className={iconClass} />;
-      case 'env':
+      case "env":
         return <Settings className={iconClass} />;
-      case 'user':
+      case "user":
         return <Users className={iconClass} />;
-      case 'org':
+      case "org":
         return <Building className={iconClass} />;
-      case 'api_key':
+      case "api_key":
         return <Key className={iconClass} />;
-      case 'cli':
+      case "cli":
         return <Terminal className={iconClass} />;
       default:
         return <FileText className={iconClass} />;
@@ -442,21 +492,24 @@ export const AuditLogs = () => {
   }, []);
 
   // Event handlers
-  const handleFilterChange = useCallback((key: keyof FilterOptions, value: string) => {
-    setFilterOptions(prev => ({ ...prev, [key]: value }));
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: keyof FilterOptions, value: string) => {
+      setFilterOptions((prev) => ({ ...prev, [key]: value }));
+    },
+    []
+  );
 
   const handlePageChange = useCallback((newPage: number) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
+    setPagination((prev) => ({ ...prev, page: newPage }));
   }, []);
 
   const handlePageSizeChange = useCallback((newPageSize: string) => {
     const pageSize = parseInt(newPageSize, 10);
-    setPagination(prev => ({ 
-      ...prev, 
-      pageSize, 
+    setPagination((prev) => ({
+      ...prev,
+      pageSize,
       page: 1, // Reset to first page when changing page size
-      totalPages: Math.ceil(prev.total / pageSize)
+      totalPages: Math.ceil(prev.total / pageSize),
     }));
   }, []);
 
@@ -471,7 +524,7 @@ export const AuditLogs = () => {
   const handleResetFilters = useCallback(() => {
     setFilterOptions(DEFAULT_FILTER_OPTIONS);
     setSearchQuery("");
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   }, []);
 
   const handleExportLogs = useCallback(async () => {
@@ -484,6 +537,7 @@ export const AuditLogs = () => {
     } catch (error) {
       toast.error("Failed to export audit logs");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterOptions]);
 
   // Memoized filtered data for display
@@ -494,8 +548,11 @@ export const AuditLogs = () => {
   // Memoized pagination info
   const paginationInfo = useMemo(() => {
     const startItem = (pagination.page - 1) * pagination.pageSize + 1;
-    const endItem = Math.min(pagination.page * pagination.pageSize, pagination.total);
-    
+    const endItem = Math.min(
+      pagination.page * pagination.pageSize,
+      pagination.total
+    );
+
     return {
       startItem,
       endItem,
@@ -503,36 +560,40 @@ export const AuditLogs = () => {
       hasPrevPage: pagination.page > 1,
       pageNumbers: generatePageNumbers(pagination.page, pagination.totalPages),
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination]);
 
   // Format date helper
   const formatDate = useCallback((dateString: string) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
       hour12: true,
     }).format(new Date(dateString));
   }, []);
 
   // Get relative time helper
-  const getRelativeTime = useCallback((dateString: string) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const getRelativeTime = useCallback(
+    (dateString: string) => {
+      const now = new Date();
+      const date = new Date(dateString);
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return formatDate(dateString);
-  }, [formatDate]);
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return formatDate(dateString);
+    },
+    [formatDate]
+  );
 
   // Loading state
   if (isLoading) {
@@ -553,9 +614,13 @@ export const AuditLogs = () => {
         <div className="flex flex-col items-center space-y-4 text-center">
           <AlertTriangle className="w-12 h-12 text-red-400" />
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">Failed to load audit logs</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Failed to load audit logs
+            </h3>
             <p className="text-gray-400 mb-4">
-              {error instanceof Error ? error.message : "An unexpected error occurred"}
+              {error instanceof Error
+                ? error.message
+                : "An unexpected error occurred"}
             </p>
             <Button
               onClick={handleRefresh}
@@ -584,7 +649,10 @@ export const AuditLogs = () => {
               <Badge variant="secondary" className="bg-gray-700 text-gray-300">
                 {pagination.total} Total Events
               </Badge>
-              <Badge variant="secondary" className="bg-electric_indigo-500/20 text-electric_indigo-400">
+              <Badge
+                variant="secondary"
+                className="bg-electric_indigo-500/20 text-electric_indigo-600"
+              >
                 Page {pagination.page} of {pagination.totalPages}
               </Badge>
             </div>
@@ -598,7 +666,9 @@ export const AuditLogs = () => {
             className="text-gray-400 border-gray-600 hover:bg-gray-700"
             disabled={isRefetching}
           >
-            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 ${isRefetching ? "animate-spin" : ""}`}
+            />
           </Button>
           <Button
             onClick={handleExportLogs}
@@ -640,7 +710,7 @@ export const AuditLogs = () => {
             {/* Time Range Filter */}
             <Select
               value={filterOptions.timeRange}
-              onValueChange={(value) => handleFilterChange('timeRange', value)}
+              onValueChange={(value) => handleFilterChange("timeRange", value)}
             >
               <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
                 <Clock className="w-4 h-4 mr-2" />
@@ -648,7 +718,11 @@ export const AuditLogs = () => {
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700">
                 {TIME_RANGE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="text-white">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-white"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -658,7 +732,9 @@ export const AuditLogs = () => {
             {/* Resource Type Filter */}
             <Select
               value={filterOptions.resourceType}
-              onValueChange={(value) => handleFilterChange('resourceType', value)}
+              onValueChange={(value) =>
+                handleFilterChange("resourceType", value)
+              }
             >
               <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
                 <Filter className="w-4 h-4 mr-2" />
@@ -666,7 +742,11 @@ export const AuditLogs = () => {
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700">
                 {RESOURCE_TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="text-white">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-white"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -676,16 +756,22 @@ export const AuditLogs = () => {
             {/* User Filter */}
             <Select
               value={filterOptions.user}
-              onValueChange={(value) => handleFilterChange('user', value)}
+              onValueChange={(value) => handleFilterChange("user", value)}
             >
               <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
                 <User className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="All Users" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="all" className="text-white">All Users</SelectItem>
+                <SelectItem value="all" className="text-white">
+                  All Users
+                </SelectItem>
                 {auditLogsData?.users?.map((user) => (
-                  <SelectItem key={user.id} value={user.id} className="text-white">
+                  <SelectItem
+                    key={user.id}
+                    value={user.id}
+                    className="text-white"
+                  >
                     {user.full_name}
                   </SelectItem>
                 ))}
@@ -694,29 +780,58 @@ export const AuditLogs = () => {
           </div>
 
           {/* Active Filters & Reset */}
-          {(searchQuery || filterOptions.timeRange !== '24h' || 
-            filterOptions.resourceType !== 'all' || filterOptions.user !== 'all') && (
+          {(searchQuery ||
+            filterOptions.timeRange !== "24h" ||
+            filterOptions.resourceType !== "all" ||
+            filterOptions.user !== "all") && (
             <div className="mt-4 pt-4 border-t border-gray-700 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-400">Active filters:</span>
                 {searchQuery && (
-                  <Badge variant="secondary" className="bg-gray-700 text-gray-300">
+                  <Badge
+                    variant="secondary"
+                    className="bg-gray-700 text-gray-300"
+                  >
                     Search: "{searchQuery}"
                   </Badge>
                 )}
-                {filterOptions.timeRange !== '24h' && (
-                  <Badge variant="secondary" className="bg-gray-700 text-gray-300">
-                    Time: {TIME_RANGE_OPTIONS.find(opt => opt.value === filterOptions.timeRange)?.label}
+                {filterOptions.timeRange !== "24h" && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-gray-700 text-gray-300"
+                  >
+                    Time:{" "}
+                    {
+                      TIME_RANGE_OPTIONS.find(
+                        (opt) => opt.value === filterOptions.timeRange
+                      )?.label
+                    }
                   </Badge>
                 )}
-                {filterOptions.resourceType !== 'all' && (
-                  <Badge variant="secondary" className="bg-gray-700 text-gray-300">
-                    Resource: {RESOURCE_TYPE_OPTIONS.find(opt => opt.value === filterOptions.resourceType)?.label}
+                {filterOptions.resourceType !== "all" && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-gray-700 text-gray-300"
+                  >
+                    Resource:{" "}
+                    {
+                      RESOURCE_TYPE_OPTIONS.find(
+                        (opt) => opt.value === filterOptions.resourceType
+                      )?.label
+                    }
                   </Badge>
                 )}
-                {filterOptions.user !== 'all' && (
-                  <Badge variant="secondary" className="bg-gray-700 text-gray-300">
-                    User: {auditLogsData?.users?.find(u => u.id === filterOptions.user)?.full_name}
+                {filterOptions.user !== "all" && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-gray-700 text-gray-300"
+                  >
+                    User:{" "}
+                    {
+                      auditLogsData?.users?.find(
+                        (u) => u.id === filterOptions.user
+                      )?.full_name
+                    }
                   </Badge>
                 )}
               </div>
@@ -737,13 +852,14 @@ export const AuditLogs = () => {
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
-            <div className="flex items-center">
-              <Activity className="w-5 h-5 mr-2 text-electric_indigo-500" />
+            <div className="flex items-center gap-3">
+              <Activity className="size-8 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
               Activity Log
             </div>
             {pagination.total > 0 && (
               <div className="text-sm text-gray-400 font-normal">
-                Showing {paginationInfo.startItem}-{paginationInfo.endItem} of {pagination.total}
+                Showing {paginationInfo.startItem}-{paginationInfo.endItem} of{" "}
+                {pagination.total}
               </div>
             )}
           </CardTitle>
@@ -752,14 +868,21 @@ export const AuditLogs = () => {
           {displayData.length === 0 ? (
             <div className="text-center py-12">
               <Activity className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No audit logs found</h3>
+              <h3 className="text-lg font-medium text-white mb-2">
+                No audit logs found
+              </h3>
               <p className="text-gray-400 mb-4">
-                {debouncedSearchQuery || Object.values(filterOptions).some(v => v !== 'all' && v !== '24h')
+                {debouncedSearchQuery ||
+                Object.values(filterOptions).some(
+                  (v) => v !== "all" && v !== "24h"
+                )
                   ? "No logs match your current filters"
-                  : "No audit logs available for this time period"
-                }
+                  : "No audit logs available for this time period"}
               </p>
-              {(debouncedSearchQuery || Object.values(filterOptions).some(v => v !== 'all' && v !== '24h')) && (
+              {(debouncedSearchQuery ||
+                Object.values(filterOptions).some(
+                  (v) => v !== "all" && v !== "24h"
+                )) && (
                 <Button
                   onClick={handleResetFilters}
                   variant="outline"
@@ -801,7 +924,9 @@ export const AuditLogs = () => {
                         <td className="py-4 px-4">
                           <div className="flex items-center space-x-3">
                             <Badge
-                              className={`${getActionBadgeColor(log.action)} border flex items-center space-x-1`}
+                              className={`${getActionBadgeColor(
+                                log.action
+                              )} border flex items-center space-x-1`}
                             >
                               {getActionIcon(log.action)}
                               <span className="text-xs font-medium">
@@ -812,13 +937,13 @@ export const AuditLogs = () => {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center space-x-2">
-                            {getResourceIcon(log.resource_type || 'system')}
+                            {getResourceIcon(log.resource_type || "system")}
                             <div>
                               <div className="text-sm font-medium text-white">
-                                {log.project || log.environment || 'System'}
+                                {log.project || log.environment || "System"}
                               </div>
                               <div className="text-xs text-gray-400">
-                                {log.resource_type || 'system'}
+                                {log.resource_type || "system"}
                               </div>
                             </div>
                           </div>
@@ -831,7 +956,7 @@ export const AuditLogs = () => {
                                 {log.user}
                               </div>
                               <div className="text-xs text-gray-400">
-                                {log.ip_address || 'Unknown IP'}
+                                {log.ip_address || "Unknown IP"}
                               </div>
                             </div>
                           </div>
@@ -881,7 +1006,11 @@ export const AuditLogs = () => {
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-700">
                         {PAGE_SIZE_OPTIONS.map((size) => (
-                          <SelectItem key={size} value={size.toString()} className="text-white">
+                          <SelectItem
+                            key={size}
+                            value={size.toString()}
+                            className="text-white"
+                          >
                             {size}
                           </SelectItem>
                         ))}
@@ -917,12 +1046,18 @@ export const AuditLogs = () => {
                     <div className="flex items-center space-x-1">
                       {paginationInfo.pageNumbers.map((pageNum, index) => (
                         <div key={index}>
-                          {pageNum === '...' ? (
+                          {pageNum === "..." ? (
                             <span className="px-3 py-1 text-gray-400">...</span>
                           ) : (
                             <Button
-                              onClick={() => handlePageChange(pageNum as number)}
-                              variant={pageNum === pagination.page ? "default" : "outline"}
+                              onClick={() =>
+                                handlePageChange(pageNum as number)
+                              }
+                              variant={
+                                pageNum === pagination.page
+                                  ? "default"
+                                  : "outline"
+                              }
                               size="sm"
                               className={
                                 pageNum === pagination.page

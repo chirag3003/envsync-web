@@ -13,28 +13,28 @@ export const UserSettings = () => {
     userData,
     isLoading,
     error,
-    
+
     // Form state
     formData,
     formErrors,
     hasUnsavedChanges,
     logoPreview,
     emailNotifications,
-    
+
     // Dialog states
     isPasswordResetDialogOpen,
     isDeleteAccountDialogOpen,
     deleteConfirmText,
-    
+
     // Refs
     fileInputRef,
-    
+
     // Setters
     setEmailNotifications,
     setIsPasswordResetDialogOpen,
     setIsDeleteAccountDialogOpen,
     setDeleteConfirmText,
-    
+
     // Handlers
     handleInputChange,
     handleLogoUpload,
@@ -42,7 +42,8 @@ export const UserSettings = () => {
     handleSaveChanges,
     handleResetPassword,
     handleDeleteUser,
-    
+    handleResetChanges,
+
     // Mutations
     updateUserSettings,
     resetPasswordMutation,
@@ -77,6 +78,7 @@ export const UserSettings = () => {
           onLogoUpload={handleLogoUpload}
           onLogoRemove={handleLogoRemove}
           onSaveChanges={handleSaveChanges}
+          onResetChanges={handleResetChanges}
           isLoading={updateUserSettings.isPending}
         />
 

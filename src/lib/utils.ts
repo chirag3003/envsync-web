@@ -19,3 +19,5 @@ export const formatLastUsed = (lastUsedAt: Date | null) => {
   if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
   return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
 };
+
+// Manage roles and assign permissions to control what users can access across the platform.

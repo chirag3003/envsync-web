@@ -1,5 +1,6 @@
 export enum API_KEYS {
   GET_API_KEYS = "api-keys",
+  ALL_APPLICATIONS = "applications",
 }
 
 export interface FormData {
@@ -27,7 +28,13 @@ export const INITIAL_FORM_ERRORS: FormErrors = {};
 
 // File upload constraints
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+export const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
 
 // Validation rules
 export const MIN_ORG_NAME_LENGTH = 2;
@@ -48,8 +55,8 @@ export interface App {
 
 export interface FilterOptions {
   status: string;
-  sortBy: 'name' | 'created_at' | 'updated_at';
-  sortOrder: 'asc' | 'desc';
+  sortBy: "name" | "created_at" | "updated_at";
+  sortOrder: "asc" | "desc";
 }
 
 export interface Statistics {
@@ -61,21 +68,21 @@ export interface Statistics {
 
 // Constants
 export const DEFAULT_FILTER_OPTIONS: FilterOptions = {
-  status: 'all',
-  sortBy: 'updated_at',
-  sortOrder: 'desc',
+  status: "all",
+  sortBy: "updated_at",
+  sortOrder: "desc",
 };
 
 export const STATUS_OPTIONS = [
-  { value: 'all', label: 'All Status' },
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
+  { value: "all", label: "All Status" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
 ] as const;
 
 export const SORT_OPTIONS = [
-  { value: 'name', label: 'Name' },
-  { value: 'created_at', label: 'Created Date' },
-  { value: 'updated_at', label: 'Last Updated' },
+  { value: "name", label: "Name" },
+  { value: "created_at", label: "Created Date" },
+  { value: "updated_at", label: "Last Updated" },
 ] as const;
 
 export const DEBOUNCE_DELAY = 300;
@@ -176,30 +183,39 @@ SESSION_SECRET=your-session-secret`;
 
 // Environment variable categories for better organization
 export const ENV_VAR_CATEGORIES = {
-  DATABASE: ['DATABASE', 'DB', 'POSTGRES', 'MYSQL', 'MONGO', 'REDIS'],
-  API: ['API', 'ENDPOINT', 'URL', 'URI'],
-  AUTH: ['AUTH', 'JWT', 'TOKEN', 'SECRET', 'KEY', 'PASSWORD', 'CREDENTIAL'],
-  CONFIG: ['CONFIG', 'SETTING', 'OPTION', 'FLAG'],
-  SERVICE: ['SERVICE', 'EXTERNAL', 'THIRD_PARTY'],
+  DATABASE: ["DATABASE", "DB", "POSTGRES", "MYSQL", "MONGO", "REDIS"],
+  API: ["API", "ENDPOINT", "URL", "URI"],
+  AUTH: ["AUTH", "JWT", "TOKEN", "SECRET", "KEY", "PASSWORD", "CREDENTIAL"],
+  CONFIG: ["CONFIG", "SETTING", "OPTION", "FLAG"],
+  SERVICE: ["SERVICE", "EXTERNAL", "THIRD_PARTY"],
 } as const;
 
 // Sensitive keywords that automatically mark variables as secrets
 export const SENSITIVE_KEYWORDS = [
-  'SECRET', 'PASSWORD', 'TOKEN', 'KEY', 'AUTH', 'CREDENTIAL', 
-  'PRIVATE', 'JWT', 'API_KEY', 'STRIPE', 'PAYPAL', 'OAUTH'
+  "SECRET",
+  "PASSWORD",
+  "TOKEN",
+  "KEY",
+  "AUTH",
+  "CREDENTIAL",
+  "PRIVATE",
+  "JWT",
+  "API_KEY",
+  "STRIPE",
+  "PAYPAL",
+  "OAUTH",
 ] as const;
 
 // Color palette for environment types
 export const ENV_TYPE_COLORS = [
-  '#ef4444', // red
-  '#f97316', // orange
-  '#eab308', // yellow
-  '#22c55e', // green
-  '#06b6d4', // cyan
-  '#3b82f6', // blue
-  '#6366f1', // indigo
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#f59e0b', // amber
+  "#ef4444", // red
+  "#f97316", // orange
+  "#eab308", // yellow
+  "#22c55e", // green
+  "#06b6d4", // cyan
+  "#3b82f6", // blue
+  "#6366f1", // indigo
+  "#8b5cf6", // violet
+  "#ec4899", // pink
+  "#f59e0b", // amber
 ] as const;
-

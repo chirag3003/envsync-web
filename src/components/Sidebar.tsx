@@ -1,29 +1,9 @@
-import {
-  Database,
-  Users,
-  Key,
-  Activity,
-  Settings,
-  Globe,
-  LogOut,
-  Menu,
-  ChevronLeft,
-  ShieldAlert,
-} from "lucide-react";
+import { LogOut, Menu, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 import { useMemo } from "react";
-
-const navItems = [
-  { id: "applications", name: "Projects", icon: Database },
-  { id: "users", name: "Team", icon: Users },
-  { id: "roles", name: "Roles", icon: ShieldAlert },
-  { id: "apikeys", name: "API Keys", icon: Key },
-  { id: "audit", name: "Activity", icon: Activity },
-  { id: "settings", name: "Account", icon: Settings },
-  { id: "organisation", name: "Organisation", icon: Globe },
-];
+import { navItems } from "@/constants";
+import { useAuthContext } from "@/contexts/auth";
 
 interface SidebarProps {
   expanded: boolean;
@@ -31,38 +11,15 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
-  const { user, isLoading, token } = useAuth();
+  const { user, token, allowedScopes } = useAuthContext();
   const { pathname } = useLocation();
 
-  // Determine user's role and permissions, and render navigation accordingly
   const authorizedNavItems = useMemo(
     () =>
       navItems.filter((item) => {
-        if (!user) return false;
-        const { have_api_access, is_admin, is_master, can_edit, can_view } =
-          user.role;
-
-        switch (item.id) {
-          case "apikeys":
-            return have_api_access || is_admin || is_master;
-
-          case "applications":
-            return can_edit || is_admin || is_master || can_view;
-          case "users":
-            return true;
-
-          case "organisation":
-          case "audit":
-            return is_admin || is_master;
-
-          case "settings":
-            return true;
-
-          default:
-            return true;
-        }
+        return allowedScopes.includes(item.id);
       }),
-    [user]
+    [allowedScopes]
   );
 
   const activeView = pathname.split("/")[1] || "applications";

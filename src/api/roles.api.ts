@@ -10,7 +10,7 @@ import {
 } from "@envsync-cloud/envsync-ts-sdk";
 import { API_KEYS } from "../constants";
 import { useInvalidateQueries } from "@/hooks/useApi";
-import { features } from "process";
+import { getRandomHexCode } from "@/lib/utils";
 
 const getAccessLevel = (
   payload: Pick<RoleResponse, "is_admin" | "can_edit" | "can_view">
@@ -41,6 +41,7 @@ export interface Role {
   color?: string;
   accessLevel: "admin" | "editor" | "viewer" | "none";
   features: string[];
+  isMaster: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,11 +60,12 @@ const useAllRoles = () => {
         .map((role) => ({
           id: role.id,
           name: role.name,
-          color: role.color || "#05c180",
+          color: role.color || getRandomHexCode(),
           accessLevel: getAccessLevel(role),
           features: extractFeatures(role),
           createdAt: new Date(role.created_at),
           updatedAt: new Date(role.updated_at),
+          isMaster: role.is_master || false,
         })) satisfies Role[];
     },
     refetchInterval: 5 * 60 * 1000, // 5 minutes
@@ -92,8 +94,9 @@ const useUpdateRole = () => {
   const { invalidateRoles } = useInvalidateQueries();
 
   return useMutation({
-    mutationFn: async (payload: UpdateRoleRequest) => {
-      const role = await sdk.roles.updateRole(payload.role_id, payload);
+    mutationFn: async ({ role_id, ...payload }: UpdateRoleRequest) => {
+      console.log("Updating role with payload:", payload);
+      const role = await sdk.roles.updateRole(role_id, payload);
       return role;
     },
     onSettled: () => {

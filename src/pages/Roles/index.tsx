@@ -12,7 +12,9 @@ import {
   Shield,
   ShieldAlert,
   Shuffle,
+  Star,
   User2,
+  UserPlus2,
   Webhook,
   X,
 } from "lucide-react";
@@ -51,6 +53,11 @@ import { Role } from "@/api/roles.api";
 import { useRolesTable } from "@/hooks/useRoles";
 import { AvatarGroup } from "@/components/ui/avatar-group";
 import { DialogClose } from "@radix-ui/react-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const accessLevelIcon: Record<
   "none" | "viewer" | "editor" | "admin",
@@ -69,6 +76,7 @@ const featuresIcons: Record<string, React.ReactNode> = {
 };
 
 const getRoleIcon = (role: Role) => {
+  if (role.isMaster) return Crown;
   if (role.accessLevel === "admin" && role.features.length === 3) return Crown;
   if (role.features.includes("billing")) return DollarSign;
   if (role.accessLevel === "admin") return Shield;
@@ -87,8 +95,9 @@ const getLogo = (role: Role) => {
       style={{
         backgroundColor: role.color,
         color: isLight ? dark : light,
-        // borderColor: isLight ? dark : light,
-        // borderWidth: 1,
+        borderWidth: role.isMaster ? 1 : 0,
+        borderStyle: "solid",
+        borderColor: (isLight ? dark : light) + "66",
       }}
       className="size-8 rounded-md shadow bg-gray-700 flex items-center justify-center"
     >
@@ -99,7 +108,6 @@ const getLogo = (role: Role) => {
 
 export const Roles = () => {
   const roles = useRolesTable();
-  const updateRole = api.roles.updateRole();
   const deleteRole = api.roles.deleteRole();
 
   return (
@@ -152,10 +160,23 @@ export const Roles = () => {
                     className="border-b border-gray-700 hover:bg-gray-750"
                   >
                     <td className="p-4">
-                      <div className="flex flex-col">
+                      <div className="flex items-center justify-between">
                         <span className="font-medium flex gap-2 items-center text-white">
                           {getLogo(role)}
                           {role.name || "Untitled"}
+                          {role.isMaster && (
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Star
+                                  size={16}
+                                  className="fill-yellow-300/60"
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                This is the master role and can not be modified.
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
                         </span>
                       </div>
                     </td>
@@ -215,19 +236,31 @@ export const Roles = () => {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end space-x-2">
-                        <RoleEditForm prefills={role} edit>
+                        <RoleEditForm
+                          prefills={role}
+                          edit
+                          disabled={role.isMaster}
+                        >
                           <Button
                             variant="outline"
                             size="sm"
                             className="text-white border-gray-600 hover:bg-gray-700"
-                            // onClick={() => roles.handleEditRole(role.id)}
                           >
                             <Pencil className="size-3" />
                           </Button>
                         </RoleEditForm>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-white border-gray-600 hover:bg-gray-700"
+                        >
+                          <UserPlus2 className="size-3" />
+                        </Button>
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button
+                              disabled={role.isMaster}
                               variant="outline"
                               size="sm"
                               className="text-red-400 border-red-600 hover:bg-red-900/20 hover:text-red-300"
@@ -292,14 +325,16 @@ export const Roles = () => {
               <ShieldAlert className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <h3 className="text-xl font-medium text-white mb-2">No Roles</h3>
               <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Create your first API key to start using EnvSync services. API
-                keys allow you to authenticate and access our APIs
-                programmatically.
+                Create your first role to manage access permissions across
+                EnvSync. Roles allow you to define what actions team members can
+                perform and which features they can access.
               </p>
-              <Button className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Role
-              </Button>
+              <RoleEditForm>
+                <Button className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white">
+                  <Plus className="size-4 mr-2" />
+                  Create New Role
+                </Button>
+              </RoleEditForm>
             </div>
           )}
         </CardContent>
@@ -312,10 +347,12 @@ export const RoleEditForm = ({
   prefills,
   edit = false,
   children,
+  disabled,
 }: {
   prefills?: Partial<Role>;
   edit?: boolean;
   children?: JSX.Element;
+  disabled?: boolean;
 } = {}) => {
   const [name, setRoleName] = useState(prefills?.name || "");
   const [accessLevel, setAccessLevel] = useState<string>(
@@ -395,8 +432,6 @@ export const RoleEditForm = ({
   };
 
   const handleUpdateRole = () => {
-    if (!prefills?.name) return;
-
     const payload = generatePayload();
 
     updateRoleMutation.mutate(
@@ -415,7 +450,9 @@ export const RoleEditForm = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children ? (
-          cloneElement(children, { disabled: createRoleMutation.isPending })
+          cloneElement(children, {
+            disabled: disabled || createRoleMutation.isPending,
+          })
         ) : (
           <Button
             className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
@@ -545,7 +582,7 @@ export const RoleEditForm = ({
           </DialogClose>
           {edit ? (
             <Button
-              onClick={handleCreateRole}
+              onClick={handleUpdateRole}
               className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
               disabled={!unsavedChanges || updateRoleMutation.isPending}
             >

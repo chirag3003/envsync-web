@@ -1,3 +1,14 @@
+import {
+  Database,
+  Users,
+  Key,
+  Activity,
+  Settings,
+  Globe,
+  ShieldAlert,
+} from "lucide-react";
+import type { FC } from "react";
+
 export enum API_KEYS {
   ALL_API_KEYS = "api-keys",
   ALL_APPLICATIONS = "applications/all",
@@ -9,6 +20,30 @@ export enum API_KEYS {
   ALL_ENVIRONMENT_TYPES = "environment-types/all",
   ALL_ENVIRONMENT_VARIABLES = "environment-variables/all",
 }
+
+export const SCOPES = [
+  "applications",
+  "users",
+  "roles",
+  "apikeys",
+  "audit",
+  "settings",
+  "organisation",
+] as const;
+
+export const navItems = [
+  { id: "applications", name: "Projects", icon: Database },
+  { id: "users", name: "Team", icon: Users },
+  { id: "roles", name: "Roles", icon: ShieldAlert },
+  { id: "apikeys", name: "API Keys", icon: Key },
+  { id: "audit", name: "Activity", icon: Activity },
+  { id: "settings", name: "Account", icon: Settings },
+  { id: "organisation", name: "Organisation", icon: Globe },
+] satisfies {
+  id: (typeof SCOPES)[number];
+  name: string;
+  icon: FC;
+}[];
 
 export interface FormData {
   name: string;
@@ -52,7 +87,7 @@ export interface App {
   org_id: string;
   name: string;
   description: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   status?: string;
   created_at: Date;
   updated_at: Date;

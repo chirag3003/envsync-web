@@ -65,11 +65,11 @@ export const DeleteEnvVarModal = ({
         <DialogHeader>
           <DialogTitle className="text-white flex items-center">
             <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-            Delete Environment Variable
+            Delete {variable.sensitive ? "Secret" : "Variable"}:{" "}
           </DialogTitle>
           <DialogDescription className="text-slate-400">
             This action cannot be undone. This will permanently delete the
-            environment variable and remove it from all deployments.
+            {variable.sensitive ? " secret" : " variable"} and remove it from all deployments.
           </DialogDescription>
         </DialogHeader>
 
@@ -136,12 +136,11 @@ export const DeleteEnvVarModal = ({
               <div className="text-sm text-red-200">
                 <p className="font-medium mb-1">This will permanently:</p>
                 <ul className="list-disc list-inside space-y-1 text-red-300">
-                  <li>Delete the environment variable from all environments</li>
+                  <li>Delete the {variable.sensitive ? "secret" : "variable"} from all environments</li>
                   <li>Remove it from any active deployments</li>
                   <li>
-                    Clear the variable from build and runtime configurations
+                    Clear the {variable.sensitive ? "secret" : "variable"} from build and runtime configurations
                   </li>
-                  <li>Remove all associated audit logs and history</li>
                 </ul>
               </div>
             </div>
@@ -163,11 +162,11 @@ export const DeleteEnvVarModal = ({
               className={`bg-slate-900 border-slate-700 text-white font-mono ${
                 confirmText && !isConfirmValid ? "border-red-500" : ""
               }`}
-              placeholder="Enter the variable key"
+              placeholder="Enter the Key"
               disabled={isDeleting}
             />
             {confirmText && !isConfirmValid && (
-              <p className="text-red-400 text-sm">Variable key doesn't match</p>
+              <p className="text-red-400 text-sm">Key doesn't match</p>
             )}
           </div>
         </div>
@@ -195,7 +194,7 @@ export const DeleteEnvVarModal = ({
             ) : (
               <>
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Variable
+                Delete {variable.sensitive ? "Secret" : "Variable"}
               </>
             )}
           </Button>

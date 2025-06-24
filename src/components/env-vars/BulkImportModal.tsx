@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,7 @@ interface BulkImportModalProps {
   environmentTypes: EnvironmentType[];
   onImport: (data: BulkEnvVarData) => void;
   isImporting: boolean;
+  isSecret?: boolean; // Optional prop to force secret mode
 }
 
 export const BulkImportModal = ({
@@ -61,7 +63,13 @@ export const BulkImportModal = ({
   environmentTypes,
   onImport,
   isImporting,
+  isSecret,
 }: BulkImportModalProps) => {
+  const location = useLocation();
+  
+  // Determine if we're on secrets page or if forced to secret mode
+  const isSecretsPage = location.pathname.includes('/secrets') || isSecret;
+  
   const [selectedEnvType, setSelectedEnvType] = useState("");
   const [importText, setImportText] = useState("");
   const [parsedVariables, setParsedVariables] = useState<ParsedVariable[]>([]);
@@ -100,7 +108,7 @@ export const BulkImportModal = ({
         parsed.push({
           key: trimmedLine,
           value: "",
-          sensitive: false,
+          sensitive: isSecretsPage, // Auto-set sensitive for secrets page
           line: index + 1,
           valid: false,
           error: "Missing '=' separator",
@@ -135,19 +143,24 @@ export const BulkImportModal = ({
         valid = false;
       }
 
-      // Determine if sensitive (common secret patterns)
-      const sensitivePatterns = [
-        /secret/i,
-        /password/i,
-        /token/i,
-        /key/i,
-        /auth/i,
-        /credential/i,
-        /private/i,
-        /jwt/i,
-        /api_key/i,
-      ];
-      const sensitive = sensitivePatterns.some((pattern) => pattern.test(key));
+      // Determine if sensitive
+      let sensitive = isSecretsPage; // Auto-set for secrets page
+      
+      if (!isSecretsPage) {
+        // Only auto-detect sensitivity if not on secrets page
+        const sensitivePatterns = [
+          /secret/i,
+          /password/i,
+          /token/i,
+          /key/i,
+          /auth/i,
+          /credential/i,
+          /private/i,
+          /jwt/i,
+          /api_key/i,
+        ];
+        sensitive = sensitivePatterns.some((pattern) => pattern.test(key));
+      }
 
       parsed.push({
         key: key.toUpperCase(),
@@ -160,7 +173,7 @@ export const BulkImportModal = ({
     });
 
     setParsedVariables(parsed);
-  }, [importText]);
+  }, [importText, isSecretsPage]);
 
   // Handle import
   const handleImport = useCallback(() => {
@@ -188,29 +201,72 @@ export const BulkImportModal = ({
 
   // Load example
   const handleLoadExample = useCallback(() => {
-    setImportText(BULK_IMPORT_EXAMPLE);
+    const exampleText = isSecretsPage 
+      ? `# Secret variables for your application
+# Lines starting with # are comments
+
+API_SECRET_KEY=sk_live_abcd1234567890
+DATABASE_PASSWORD=super_secure_password_123
+JWT_SECRET=your-256-bit-secret
+STRIPE_SECRET_KEY=sk_test_xyz789
+OAUTH_CLIENT_SECRET=oauth_secret_value`
+      : BULK_IMPORT_EXAMPLE;
+    
+    setImportText(exampleText);
     setActiveTab("preview");
-  }, []);
+  }, [isSecretsPage]);
 
   const validVariables = parsedVariables.filter((v) => v.valid);
   const invalidVariables = parsedVariables.filter((v) => !v.valid);
   const canImport = selectedEnvType && validVariables.length > 0;
+
+  // Dynamic content based on context
+  const modalTitle = isSecretsPage ? "Bulk Import Secrets" : "Bulk Import Environment Variables";
+  const modalDescription = isSecretsPage 
+    ? "Import multiple secrets at once using key=value format. All imported values will be treated as sensitive and encrypted."
+    : "Import multiple environment variables at once using key=value format.";
+  const buttonText = isSecretsPage ? "Import Secrets" : "Import Variables";
+  const buttonIcon = isSecretsPage ? Shield : Upload;
+  const buttonColor = isSecretsPage 
+    ? "bg-red-500 hover:bg-red-600" 
+    : "bg-emerald-500 hover:bg-emerald-600";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-slate-800 border-slate-700 max-w-4xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center">
-            <Upload className="w-5 h-5 text-emerald-500 mr-2" />
-            Bulk Import Environment Variables
+            {isSecretsPage ? (
+              <Shield className="w-5 h-5 text-red-500 mr-2" />
+            ) : (
+              <Upload className="w-5 h-5 text-emerald-500 mr-2" />
+            )}
+            {modalTitle}
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            Import multiple environment variables at once using key=value
-            format.
+            {modalDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Context Banner for Secrets */}
+          {isSecretsPage && (
+            <div className="bg-red-900/20 border border-red-800/30 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Shield className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-medium text-red-400 mb-1">
+                    Secret Import Mode
+                  </h4>
+                  <p className="text-xs text-red-300/80">
+                    All imported variables will be automatically marked as sensitive, 
+                    encrypted, and hidden by default for security.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Environment Type Selection */}
           <div className="space-y-2">
             <Label htmlFor="bulk-env-type" className="text-white">
@@ -269,7 +325,7 @@ export const BulkImportModal = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="import-text" className="text-white">
-                    Environment Variables
+                    {isSecretsPage ? "Secret Variables" : "Environment Variables"}
                   </Label>
                   <Button
                     onClick={handleLoadExample}
@@ -286,13 +342,23 @@ export const BulkImportModal = ({
                   value={importText}
                   onChange={(e) => setImportText(e.target.value)}
                   className="bg-slate-900 border-slate-700 text-white font-mono min-h-[300px]"
-                  placeholder={`# Enter your environment variables in KEY=value format
+                  placeholder={
+                    isSecretsPage 
+                      ? `# Enter your secret variables in KEY=value format
+# Lines starting with # are comments
+
+API_SECRET_KEY=your-secret-api-key
+DATABASE_PASSWORD=secure_password_123
+JWT_SECRET=your-jwt-secret-key
+STRIPE_SECRET_KEY=sk_live_your_stripe_key`
+                      : `# Enter your environment variables in KEY=value format
 # Lines starting with # are comments
 
 DATABASE_URL=postgresql://user:pass@localhost:5432/db
 API_KEY=your-secret-api-key
 DEBUG=true
-PORT=3000`}
+PORT=3000`
+                  }
                   disabled={isImporting}
                 />
                 <div className="flex justify-between text-xs text-slate-400">
@@ -325,10 +391,16 @@ PORT=3000`}
                           KEY="value with spaces"
                         </code>
                       </li>
-                      <li>
-                        Variables with sensitive keywords will be marked as
-                        secrets automatically
-                      </li>
+                      {isSecretsPage ? (
+                        <li className="text-red-400">
+                          All variables will be automatically marked as secrets and encrypted
+                        </li>
+                      ) : (
+                        <li>
+                          Variables with sensitive keywords will be marked as
+                          secrets automatically
+                        </li>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -360,6 +432,15 @@ PORT=3000`}
                         className="bg-red-900/20 text-red-400"
                       >
                         {invalidVariables.length} Invalid
+                      </Badge>
+                    )}
+                    {isSecretsPage && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-red-900/20 text-red-400"
+                      >
+                        <Shield className="w-3 h-3 mr-1" />
+                        All Secrets
                       </Badge>
                     )}
                   </div>
@@ -412,7 +493,7 @@ PORT=3000`}
                             </td>
                             <td className="py-2 px-3">
                               <code className="text-sm font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded max-w-xs truncate block">
-                                {variable.sensitive
+                                {variable.sensitive || isSecretsPage
                                   ? "••••••••"
                                   : variable.value || "MISSING"}
                               </code>
@@ -420,18 +501,18 @@ PORT=3000`}
                             <td className="py-2 px-3">
                               <div
                                 className={`flex items-center space-x-1 text-xs px-2 py-1 rounded w-fit ${
-                                  variable.sensitive
+                                  variable.sensitive || isSecretsPage
                                     ? "bg-red-900/20 text-red-400"
                                     : "bg-slate-700 text-slate-300"
                                 }`}
                               >
-                                {variable.sensitive ? (
+                                {variable.sensitive || isSecretsPage ? (
                                   <Shield className="w-3 h-3" />
                                 ) : (
                                   <Key className="w-3 h-3" />
                                 )}
                                 <span>
-                                  {variable.sensitive ? "Secret" : "Variable"}
+                                  {variable.sensitive || isSecretsPage ? "Secret" : "Variable"}
                                 </span>
                               </div>
                             </td>
@@ -458,7 +539,7 @@ PORT=3000`}
                         <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                         <div className="text-sm text-red-200">
                           <p className="font-medium mb-1">
-                            {invalidVariables.length} variable
+                            {invalidVariables.length} {isSecretsPage ? "secret" : "variable"}
                             {invalidVariables.length > 1 ? "s" : ""} will be
                             skipped:
                           </p>
@@ -480,6 +561,48 @@ PORT=3000`}
                       </div>
                     </div>
                   )}
+
+                  {/* Import Summary */}
+                  {validVariables.length > 0 && (
+                    <div className={`rounded-lg p-4 border ${
+                      isSecretsPage 
+                        ? "bg-red-900/10 border-red-800/30" 
+                        : "bg-emerald-900/10 border-emerald-800/30"
+                    }`}>
+                      <div className="flex items-start space-x-3">
+                        {isSecretsPage ? (
+                          <Shield className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                        )}
+                        <div className={`text-sm ${
+                          isSecretsPage ? "text-red-200" : "text-emerald-200"
+                        }`}>
+                          <p className="font-medium mb-1">
+                            Ready to import {validVariables.length} {isSecretsPage ? "secret" : "variable"}
+                            {validVariables.length > 1 ? "s" : ""}
+                          </p>
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center space-x-4">
+                              <span>
+                                • Environment: {environmentTypes.find(env => env.id === selectedEnvType)?.name || "Not selected"}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <span>
+                                • Type: {isSecretsPage ? "All secrets (encrypted)" : `${validVariables.filter(v => v.sensitive).length} secrets, ${validVariables.filter(v => !v.sensitive).length} variables`}
+                              </span>
+                            </div>
+                            {isSecretsPage && (
+                              <div className="flex items-center space-x-4">
+                                <span>• Security: All values will be encrypted and hidden</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>
@@ -497,19 +620,22 @@ PORT=3000`}
           </Button>
           <Button
             onClick={handleImport}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white"
+            className={`text-white ${buttonColor}`}
             disabled={!canImport || isImporting}
           >
             {isImporting ? (
               <>
                 <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Importing...
+                {isSecretsPage ? "Importing Secrets..." : "Importing Variables..."}
               </>
             ) : (
               <>
-                <Upload className="w-4 h-4 mr-2" />
-                Import {validVariables.length} Variable
-                {validVariables.length !== 1 ? "s" : ""}
+                {isSecretsPage ? (
+                  <Shield className="w-4 h-4 mr-2" />
+                ) : (
+                  <Upload className="w-4 h-4 mr-2" />
+                )}
+                {buttonText} ({validVariables.length})
               </>
             )}
           </Button>

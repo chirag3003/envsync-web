@@ -1,5 +1,13 @@
+import { useState } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   ArrowLeft,
   Plus,
@@ -8,6 +16,9 @@ import {
   Download,
   Settings,
   Database,
+  ChevronDown,
+  Shield,
+  Key,
 } from "lucide-react";
 
 interface ProjectEnvironmentsHeaderProps {
@@ -39,6 +50,23 @@ export const ProjectEnvironmentsHeader = ({
   onExport,
   onManageEnvironments,
 }: ProjectEnvironmentsHeaderProps) => {
+  const navigate = useNavigate();
+  const { projectId } = useParams();
+  const location = useLocation();
+  
+  // Determine current section based on route
+  const isSecretsPage = location.pathname.includes('/secrets');
+  const currentSection = isSecretsPage ? 'Secrets' : 'Environments';
+
+  const handleSectionChange = (section: 'environments' | 'secrets') => {
+    if (!projectId) return;
+    
+    const basePath = `/applications/${projectId}`;
+    const targetPath = section === 'secrets' ? `${basePath}/secrets` : basePath;
+    
+    navigate(targetPath);
+  };
+
   return (
     <div className="space-y-6">
       {/* Navigation */}
@@ -53,17 +81,60 @@ export const ProjectEnvironmentsHeader = ({
           Back to Projects
         </Button>
         <span className="text-slate-500">/</span>
-        {/* <Button
-          onClick={onBack}
-          variant="ghost"
-          size="sm"
-          className="text-slate-400 hover:text-white hover:bg-slate-700"
-        >
-          {projectName}
-        </Button> */}
         <span className="text-slate-300">{projectName}</span>
         <span className="text-slate-500">/</span>
-        <span className="text-white font-medium">Environments</span>
+        
+        {/* Section Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white font-medium hover:bg-slate-700 px-3 py-2 h-auto"
+            >
+              {isSecretsPage ? (
+                <Shield className="w-4 h-4 mr-2" />
+              ) : (
+                <Settings className="w-4 h-4 mr-2" />
+              )}
+              {currentSection}
+              <ChevronDown className="w-4 h-4 ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            className="bg-slate-800 border-slate-700 min-w-[200px]"
+            align="start"
+          >
+            <DropdownMenuItem
+              onClick={() => handleSectionChange('environments')}
+              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${
+                !isSecretsPage ? 'bg-slate-700' : ''
+              }`}
+            >
+              <Settings className="w-4 h-4 mr-3 text-emerald-400" />
+              <div className="flex flex-col">
+                <span className="font-medium">Environments</span>
+                <span className="text-xs text-slate-400">
+                  Manage environment variables & configuration
+                </span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSectionChange('secrets')}
+              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${
+                isSecretsPage ? 'bg-slate-700' : ''
+              }`}
+            >
+              <Shield className="w-4 h-4 mr-3 text-red-400" />
+              <div className="flex flex-col">
+                <span className="font-medium">Secrets</span>
+                <span className="text-xs text-slate-400">
+                  Manage sensitive variables & credentials
+                </span>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Header */}
@@ -76,25 +147,48 @@ export const ProjectEnvironmentsHeader = ({
             <div>
               <h1 className="text-3xl font-bold text-white">{projectName}</h1>
               <p className="text-slate-400">
-                Environment Variables & Configuration
+                {isSecretsPage 
+                  ? "Sensitive Variables & Credentials Management"
+                  : "Environment Variables & Configuration"
+                }
               </p>
             </div>
           </div>
 
           {/* Statistics */}
           <div className="flex items-center space-x-4 mt-3">
-            <Badge variant="secondary" className="bg-slate-700 text-slate-300">
-              {totalVariables} Variables
-            </Badge>
-            <Badge variant="secondary" className="bg-slate-700 text-slate-300">
-              {totalSecrets} Secrets
-            </Badge>
-            <Badge
-              variant="secondary"
-              className="bg-emerald-500/20 text-emerald-400"
-            >
-              {environmentTypes} Environments
-            </Badge>
+            {!isSecretsPage ? (
+              <>
+                <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+                  {totalVariables} Variables
+                </Badge>
+                <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+                  {totalSecrets} Secrets
+                </Badge>
+                <Badge
+                  variant="secondary"
+                  className="bg-emerald-500/20 text-emerald-400"
+                >
+                  {environmentTypes} Environments
+                </Badge>
+              </>
+            ) : (
+              <>
+                <Badge variant="secondary" className="bg-red-500/20 text-red-400">
+                  <Shield className="w-3 h-3 mr-1" />
+                  {totalSecrets} Secrets
+                </Badge>
+                <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+                  {totalVariables} Total Variables
+                </Badge>
+                <Badge
+                  variant="secondary"
+                  className="bg-emerald-500/20 text-emerald-400"
+                >
+                  {environmentTypes} Environments
+                </Badge>
+              </>
+            )}
           </div>
         </div>
 
@@ -145,10 +239,23 @@ export const ProjectEnvironmentsHeader = ({
 
               <Button
                 onClick={onAddVariable}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                className={`text-white ${
+                  isSecretsPage 
+                    ? "bg-red-500 hover:bg-red-600" 
+                    : "bg-emerald-500 hover:bg-emerald-600"
+                }`}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Variable
+                {isSecretsPage ? (
+                  <>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Add Secret
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Variable
+                  </>
+                )}
               </Button>
             </>
           )}

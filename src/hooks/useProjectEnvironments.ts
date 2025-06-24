@@ -30,6 +30,19 @@ export const useProjectEnvironments = (projectNameId: string) => {
             env_type_id: envType.id,
           });
 
+
+          return envVars;
+        })
+      ).then((vars) => vars.flat());
+
+      const secretsResponse = await Promise.all(
+        projectResponse.env_types.map(async (envType) => {
+          const envVars = await api.secrets.getSecrets({
+            app_id: projectNameId,
+            env_type_id: envType.id,
+          });
+
+
           return envVars;
         })
       ).then((vars) => vars.flat());
@@ -61,6 +74,23 @@ export const useProjectEnvironments = (projectNameId: string) => {
         })
       );
 
+      // Transform secrets
+      const secrets: EnvironmentVariable[] = secretsResponse.map((secret) => ({
+        id: secret.id,
+        key: secret.key,
+        value: secret.value,
+        sensitive: true,
+        app_id: secret.app_id,
+        env_type_id: secret.env_type_id,
+        created_at: new Date(secret.created_at),
+        updated_at: new Date(secret.updated_at),
+        created_by: {
+          email: "dev@test.com",
+          id: "dev-id",
+          name: "Developer",
+        },
+      }));
+
       const project: Project = {
         id: (projectResponse as any).app.id,
         name: (projectResponse as any).app.name,
@@ -73,6 +103,7 @@ export const useProjectEnvironments = (projectNameId: string) => {
         project,
         environmentTypes,
         environmentVariables,
+        secrets
       };
     },
     staleTime: 30 * 1000, // 30 seconds
@@ -104,10 +135,8 @@ export const useProjectEnvironments = (projectNameId: string) => {
   // Update environment variable
   const updateVariable = useMutation({
     mutationFn: async ({
-      variableId,
       data,
     }: {
-      variableId: string;
       data: Partial<EnvVarFormData>;
     }) => {
       return await api.environmentVariables.updateEnv(data.key, {
@@ -185,11 +214,116 @@ export const useProjectEnvironments = (projectNameId: string) => {
     },
   });
 
+  // Create secret
+  const createSecret = useMutation({
+    mutationFn: async (data: EnvVarFormData) => {
+      return await api.secrets.createSecret({
+        key: data.key,
+        value: data.value,
+        env_type_id: data.env_type_id,
+        app_id: projectNameId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["project-environments", projectNameId],
+      });
+      toast.success("Secret created successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to create secret:", error);
+      toast.error("Failed to create secret");
+    },
+  });
+
+  // Update secret
+  const updateSecret = useMutation({
+    mutationFn: async ({
+      data,
+    }: {
+      data: Partial<EnvVarFormData>;
+    }) => {
+      return await api.secrets.updateSecret(data.key, {
+        value: data.value,
+        env_type_id: data.env_type_id,
+        app_id: projectNameId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["project-environments", projectNameId],
+      });
+      toast.success("Secret updated successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to update secret:", error);
+      toast.error("Failed to update secret");
+    },
+  });
+
+  // Delete secret
+  const deleteSecret = useMutation({
+    mutationFn: async ({
+      env_type_id,
+      projectNameId,
+      key,
+    }: {
+      env_type_id: string;
+      projectNameId: string;
+      key;
+    }) => {
+      return await api.secrets.deleteSecret({
+        app_id: projectNameId,
+        env_type_id: env_type_id,
+        key,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["project-environments", projectNameId],
+      });
+      toast.success("Secret deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to delete secret:", error);
+      toast.error("Failed to delete secret");
+    },
+  });
+
+  // Bulk import secrets
+  const bulkImportSecrets = useMutation({
+    mutationFn: async (data: BulkEnvVarData) => {
+      const promises = data.variables.map((variable) =>
+        api.secrets.createSecret({
+          key: variable.key,
+          value: variable.value,
+          env_type_id: data.env_type_id,
+          app_id: projectNameId,
+        })
+      );
+
+      return await Promise.all(promises);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["project-environments", projectNameId],
+      });
+      toast.success(
+        `Successfully imported ${variables.variables.length} secrets`
+      );
+    },
+    onError: (error) => {
+      console.error("Failed to import secrets:", error);
+      toast.error("Failed to import secrets");
+    },
+  });
+
   return {
     // Data
     project: projectData?.project,
     environmentTypes: projectData?.environmentTypes || [],
     environmentVariables: projectData?.environmentVariables || [],
+    secrets: projectData?.secrets || [],
     isLoading,
     error,
 
@@ -198,6 +332,10 @@ export const useProjectEnvironments = (projectNameId: string) => {
     updateVariable,
     deleteVariable,
     bulkImportVariables,
+    createSecret,
+    updateSecret,
+    deleteSecret,
+    bulkImportSecrets,
 
     // Utility functions
     refetch,

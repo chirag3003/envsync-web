@@ -97,10 +97,12 @@ export const ViewAppModal = ({
                   <Key className="w-4 h-4" />
                   <span>{app.env_count || 0} variables</span>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <Shield className="w-4 h-4" />
+                {app.enable_secrets && (
+                  <div className="flex items-center space-x-1">
+                    <Shield className="w-4 h-4" />
                   <span>{app.secret_count || 0} secrets</span>
                 </div>
+                )}
               </div>
             </div>
             {canEdit && (
@@ -145,16 +147,6 @@ export const ViewAppModal = ({
                   </Button> */}
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <h4 className="text-white font-medium flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Created
-                </h4>
-                <p className="text-slate-300 bg-slate-900 p-3 rounded">
-                  {formatDate(app.created_at)}
-                </p>
-              </div>
             </div>
 
             <div className="space-y-4">
@@ -169,31 +161,11 @@ export const ViewAppModal = ({
               </div> */}
               <div className="space-y-2">
                 <h4 className="text-white font-medium flex items-center">
-                  <User className="w-4 h-4 mr-2" />
-                  Organization
-                </h4>
-                <div className="flex items-center space-x-2">
-                  <code className="text-sm select-all font-mono text-slate-300 bg-slate-900 px-3 py-2 rounded flex-1">
-                    {app.org_id}
-                  </code>
-                  {/* <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-slate-400 hover:text-white"
-                    onClick={handleCopyId}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button> */}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="text-white font-medium flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
-                  Last Updated
+                  Secrets Enabled
                 </h4>
                 <p className="text-slate-300 bg-slate-900 p-3 rounded">
-                  {formatDate(app.updated_at)}
+                  {app.enable_secrets ? "Yes" : "No"}
                 </p>
               </div>
             </div>
@@ -206,6 +178,18 @@ export const ViewAppModal = ({
               <div className="bg-slate-900 p-3 rounded-lg">
                 <pre className="text-sm text-slate-300 overflow-x-auto">
                   {JSON.stringify(app.metadata, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+
+          {/* Public Key */}
+          {app.public_key && (
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Public Key</h4>
+              <div className="bg-slate-900 p-3 rounded-lg">
+                <pre className="text-sm text-slate-300 overflow-x-auto">
+                  {app.public_key ? app.public_key : "No public key available"}
                 </pre>
               </div>
             </div>

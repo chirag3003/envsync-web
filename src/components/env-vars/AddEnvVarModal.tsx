@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, createElement } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ interface AddEnvVarModalProps {
   environmentTypes: EnvironmentType[];
   onSave: (data: EnvVarFormData) => void;
   isSaving: boolean;
+  isSecret?: boolean; // Optional prop to force secret mode
 }
 
 export const AddEnvVarModal = ({
@@ -45,9 +47,14 @@ export const AddEnvVarModal = ({
   environmentTypes,
   onSave,
   isSaving,
+  isSecret
 }: AddEnvVarModalProps) => {
-  const [formData, setFormData] =
-    useState<EnvVarFormData>(INITIAL_ENV_VAR_FORM);
+  const location = useLocation();
+  
+  // Determine if we're on secrets page or if forced to secret mode
+  const isSecretsPage = location.pathname.includes('/secrets') || isSecret;
+  
+  const [formData, setFormData] = useState<EnvVarFormData>(INITIAL_ENV_VAR_FORM);
   const [formErrors, setFormErrors] = useState<EnvVarFormErrors>(
     INITIAL_ENV_FORM_ERRORS
   );
@@ -55,10 +62,15 @@ export const AddEnvVarModal = ({
   // Reset form when modal opens/closes
   useEffect(() => {
     if (open) {
-      setFormData(INITIAL_ENV_VAR_FORM);
+      const initialForm = {
+        ...INITIAL_ENV_VAR_FORM,
+        // Auto-set sensitive to true if on secrets page
+        sensitive: isSecretsPage
+      };
+      setFormData(initialForm);
       setFormErrors(INITIAL_ENV_FORM_ERRORS);
     }
-  }, [open]);
+  }, [open, isSecretsPage]);
 
   // Form validation
   const validateForm = useCallback((): boolean => {
@@ -119,21 +131,53 @@ export const AddEnvVarModal = ({
     onOpenChange(false);
   }, [onOpenChange]);
 
+  // Dynamic content based on context
+  const modalTitle = isSecretsPage ? "Add Secret" : "Add Environment Variable";
+  const modalDescription = isSecretsPage 
+    ? "Create a new secret for your project. Secrets are automatically encrypted and hidden by default."
+    : "Create a new environment variable for your project. Variables can be regular values or sensitive secrets.";
+  const buttonText = isSecretsPage ? "Add Secret" : "Add Variable";
+  const buttonIcon = isSecretsPage ? Shield : Plus;
+  const buttonColor = isSecretsPage 
+    ? "bg-red-500 hover:bg-red-600" 
+    : "bg-emerald-500 hover:bg-emerald-600";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center">
-            <Plus className="w-5 h-5 text-emerald-500 mr-2" />
-            Add Environment Variable
+            {isSecretsPage ? (
+              <Shield className="w-5 h-5 text-red-500 mr-2" />
+            ) : (
+              <Plus className="w-5 h-5 text-emerald-500 mr-2" />
+            )}
+            {modalTitle}
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            Create a new environment variable for your project. Variables can be
-            regular values or sensitive secrets.
+            {modalDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Context Banner */}
+          {isSecretsPage && (
+            <div className="bg-red-900/20 border border-red-800/30 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Shield className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-medium text-red-400 mb-1">
+                    Secret Mode
+                  </h4>
+                  <p className="text-xs text-red-300/80">
+                    You're adding a secret. This value will be automatically marked as sensitive, 
+                    encrypted, and hidden by default for security.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Environment Type Selection */}
           <div className="space-y-2">
             <Label htmlFor="env-type" className="text-white">
@@ -177,7 +221,7 @@ export const AddEnvVarModal = ({
           {/* Variable Key */}
           <div className="space-y-2">
             <Label htmlFor="var-key" className="text-white">
-              Variable Key *
+              {isSecretsPage ? "Secret Key" : "Variable Key"} *
             </Label>
             <Input
               id="var-key"
@@ -188,7 +232,7 @@ export const AddEnvVarModal = ({
               className={`bg-slate-900 border-slate-700 text-white font-mono ${
                 formErrors.key ? "border-red-500" : ""
               }`}
-              placeholder="DATABASE_URL"
+              placeholder={isSecretsPage ? "API_SECRET_KEY" : "DATABASE_URL"}
               disabled={isSaving}
               maxLength={MAX_KEY_LENGTH}
             />
@@ -204,60 +248,78 @@ export const AddEnvVarModal = ({
           {/* Variable Value */}
           <div className="space-y-2">
             <Label htmlFor="var-value" className="text-white">
-              Variable Value *
+              {isSecretsPage ? "Secret Value" : "Variable Value"} *
             </Label>
-            <Textarea
-              id="var-value"
-              value={formData.value}
-              onChange={(e) => handleInputChange("value", e.target.value)}
-              className={`bg-slate-900 border-slate-700 text-white font-mono min-h-[100px] ${
-                formErrors.value ? "border-red-500" : ""
-              }`}
-              placeholder="Enter the variable value..."
-              disabled={isSaving}
-              maxLength={MAX_VALUE_LENGTH}
-            />
+            <div className="relative">
+              <Textarea
+                id="var-value"
+                value={formData.value}
+                onChange={(e) => handleInputChange("value", e.target.value)}
+                className={`bg-slate-900 border-slate-700 text-white font-mono min-h-[100px] ${
+                  formErrors.value ? "border-red-500" : ""
+                } ${formData.sensitive ? "pr-12" : ""}`}
+                placeholder={
+                  isSecretsPage 
+                    ? "Enter the secret value..." 
+                    : "Enter the variable value..."
+                }
+                disabled={isSaving}
+                maxLength={MAX_VALUE_LENGTH}
+              />
+              {formData.sensitive && (
+                <div className="absolute top-2 right-2">
+                  <Shield className="w-4 h-4 text-red-400" />
+                </div>
+              )}
+            </div>
             {formErrors.value && (
               <p className="text-red-400 text-sm">{formErrors.value}</p>
             )}
             <div className="flex justify-between text-xs text-slate-400">
-              <span>Value will be stored securely</span>
+              <span>
+                {formData.sensitive 
+                  ? "This value will be encrypted and stored securely"
+                  : "Value will be stored securely"
+                }
+              </span>
               <span>
                 {formData.value.length}/{MAX_VALUE_LENGTH}
               </span>
             </div>
           </div>
 
-          {/* Sensitive Checkbox */}
-          <div className="flex items-center space-x-3 p-4 bg-slate-900 rounded-lg border border-slate-700">
-            <Checkbox
-              id="sensitive"
-              checked={formData.sensitive}
-              onCheckedChange={(checked) =>
-                handleInputChange("sensitive", checked as boolean)
-              }
-              disabled={isSaving}
-              className="border-slate-600"
-            />
-            <div className="flex-1">
-              <Label
-                htmlFor="sensitive"
-                className="text-white flex items-center cursor-pointer"
-              >
-                {formData.sensitive ? (
-                  <Shield className="w-4 h-4 text-red-400 mr-2" />
-                ) : (
-                  <Key className="w-4 h-4 text-slate-400 mr-2" />
-                )}
-                Mark as sensitive (secret)
-              </Label>
-              <p className="text-xs text-slate-400 mt-1">
-                {formData.sensitive
-                  ? "This value will be encrypted and hidden by default"
-                  : "This value will be visible to team members with access"}
-              </p>
+          {/* Sensitive Checkbox - Hidden on secrets page since it's auto-enabled */}
+          {!isSecretsPage && (
+            <div className="flex items-center space-x-3 p-4 bg-slate-900 rounded-lg border border-slate-700">
+              <Checkbox
+                id="sensitive"
+                checked={formData.sensitive}
+                onCheckedChange={(checked) =>
+                  handleInputChange("sensitive", checked as boolean)
+                }
+                disabled={isSaving}
+                className="border-slate-600"
+              />
+              <div className="flex-1">
+                <Label
+                  htmlFor="sensitive"
+                  className="text-white flex items-center cursor-pointer"
+                >
+                  {formData.sensitive ? (
+                    <Shield className="w-4 h-4 text-red-400 mr-2" />
+                  ) : (
+                    <Key className="w-4 h-4 text-slate-400 mr-2" />
+                  )}
+                  Mark as sensitive (secret)
+                </Label>
+                <p className="text-xs text-slate-400 mt-1">
+                  {formData.sensitive
+                    ? "This value will be encrypted and hidden by default"
+                    : "This value will be visible to team members with access"}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Preview */}
           <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
@@ -266,13 +328,13 @@ export const AddEnvVarModal = ({
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-slate-400">Key:</span>
                 <code className="text-sm font-mono text-emerald-400 bg-slate-800 px-2 py-1 rounded">
-                  {formData.key || "VARIABLE_KEY"}
+                  {formData.key || (isSecretsPage ? "SECRET_KEY" : "VARIABLE_KEY")}
                 </code>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-slate-400">Value:</span>
                 <code className="text-sm font-mono text-slate-300 bg-slate-800 px-2 py-1 rounded">
-                  {formData.sensitive
+                  {formData.sensitive || isSecretsPage
                     ? "••••••••"
                     : formData.value || "variable_value"}
                 </code>
@@ -281,12 +343,18 @@ export const AddEnvVarModal = ({
                 <span className="text-xs text-slate-400">Type:</span>
                 <span
                   className={`text-xs px-2 py-1 rounded ${
-                    formData.sensitive
+                    formData.sensitive || isSecretsPage
                       ? "bg-red-900/20 text-red-400"
                       : "bg-slate-700 text-slate-300"
                   }`}
                 >
-                  {formData.sensitive ? "Secret" : "Variable"}
+                  {formData.sensitive || isSecretsPage ? "Secret" : "Variable"}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-slate-400">Environment:</span>
+                <span className="text-xs text-slate-300">
+                  {environmentTypes.find(env => env.id === formData.env_type_id)?.name || "Select environment"}
                 </span>
               </div>
             </div>
@@ -304,7 +372,7 @@ export const AddEnvVarModal = ({
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white"
+            className={`text-white ${buttonColor}`}
             disabled={
               isSaving ||
               !formData.key ||
@@ -315,12 +383,12 @@ export const AddEnvVarModal = ({
             {isSaving ? (
               <>
                 <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Adding...
+                {isSecretsPage ? "Adding Secret..." : "Adding Variable..."}
               </>
             ) : (
               <>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Variable
+                {createElement(buttonIcon, { className: "w-4 h-4 mr-2" })}
+                {buttonText}
               </>
             )}
           </Button>

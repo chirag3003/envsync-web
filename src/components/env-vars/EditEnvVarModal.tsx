@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Edit, Shield, Key, Save } from "lucide-react";
+import { Edit, Shield, Key, Save, Eye, EyeOff } from "lucide-react";
 import {
   EnvVarFormData,
   EnvVarFormErrors,
@@ -30,14 +30,13 @@ import {
   MAX_VALUE_LENGTH,
   INITIAL_ENV_FORM_ERRORS,
 } from "@/constants";
-import { useParams } from "react-router-dom";
 
 interface EditEnvVarModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   variable: EnvironmentVariable | null;
   environmentTypes: EnvironmentType[];
-  onSave: (variableId: string, data: Partial<EnvVarFormData>) => void;
+  onSave: (data: Partial<EnvVarFormData>) => void;
   isSaving: boolean;
 }
 
@@ -49,7 +48,6 @@ export const EditEnvVarModal = ({
   onSave,
   isSaving,
 }: EditEnvVarModalProps) => {
-  const { projectNameId } = useParams();
   const [formData, setFormData] = useState<EnvVarFormData>({
     key: "",
     value: "",
@@ -60,19 +58,23 @@ export const EditEnvVarModal = ({
     INITIAL_ENV_FORM_ERRORS
   );
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showSensitiveValue, setShowSensitiveValue] = useState(false);
+  const [isValueModified, setIsValueModified] = useState(false);
 
   // Initialize form when variable changes
   useEffect(() => {
     if (variable && open) {
       const initialData = {
         key: variable.key,
-        value: variable.value,
+        value: variable.sensitive ? "" : variable.value, // Hide sensitive values initially
         sensitive: variable.sensitive,
         env_type_id: variable.env_type_id,
       };
       setFormData(initialData);
       setFormErrors(INITIAL_ENV_FORM_ERRORS);
       setHasUnsavedChanges(false);
+      setShowSensitiveValue(false);
+      setIsValueModified(false);
     }
   }, [variable, open]);
 
@@ -82,12 +84,12 @@ export const EditEnvVarModal = ({
 
     const hasChanges =
       formData.key !== variable.key ||
-      formData.value !== variable.value ||
+      (isValueModified && formData.value.trim() !== "") || // Only consider value changed if it was actually modified
       formData.sensitive !== variable.sensitive ||
       formData.env_type_id !== variable.env_type_id;
 
     setHasUnsavedChanges(hasChanges);
-  }, [formData, variable]);
+  }, [formData, variable, isValueModified]);
 
   // Form validation
   const validateForm = useCallback((): boolean => {
@@ -103,11 +105,13 @@ export const EditEnvVarModal = ({
       errors.key = `Key must be less than ${MAX_KEY_LENGTH} characters`;
     }
 
-    // Validate value
-    if (!formData.value.trim()) {
-      errors.value = "Variable value is required";
-    } else if (formData.value.length > MAX_VALUE_LENGTH) {
-      errors.value = `Value must be less than ${MAX_VALUE_LENGTH} characters`;
+    // Validate value - only if it's been modified or not sensitive
+    if (!variable?.sensitive || isValueModified) {
+      if (!formData.value.trim()) {
+        errors.value = "Variable value is required";
+      } else if (formData.value.length > MAX_VALUE_LENGTH) {
+        errors.value = `Value must be less than ${MAX_VALUE_LENGTH} characters`;
+      }
     }
 
     // Validate environment type
@@ -117,12 +121,17 @@ export const EditEnvVarModal = ({
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [formData]);
+  }, [formData, variable, isValueModified]);
 
   // Handle form input changes
   const handleInputChange = useCallback(
     (field: keyof EnvVarFormData, value: string | boolean) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // Track if value field was modified
+      if (field === "value" && typeof value === "string") {
+        setIsValueModified(true);
+      }
 
       // Clear field error when user starts typing
       if (formErrors[field as keyof EnvVarFormErrors]) {
@@ -131,6 +140,23 @@ export const EditEnvVarModal = ({
     },
     [formErrors]
   );
+
+  // Handle revealing sensitive value
+  const handleRevealSensitiveValue = useCallback(() => {
+    if (variable && variable.sensitive && !showSensitiveValue) {
+      variable.value = ""; // Ensure value is set
+      setFormData((prev) => ({ ...prev, value: variable.value }));
+      setShowSensitiveValue(true);
+    }
+  }, [variable, showSensitiveValue]);
+
+  // Handle hiding sensitive value
+  const handleHideSensitiveValue = useCallback(() => {
+    if (variable && variable.sensitive && showSensitiveValue && !isValueModified) {
+      setFormData((prev) => ({ ...prev, value: "" }));
+      setShowSensitiveValue(false);
+    }
+  }, [variable, showSensitiveValue, isValueModified]);
 
   // Handle form submission
   const handleSave = useCallback(() => {
@@ -142,7 +168,8 @@ export const EditEnvVarModal = ({
     if (formData.key !== variable.key) {
       updateData.key = formData.key.trim().toUpperCase();
     }
-    if (formData.value !== variable.value) {
+    // Only include value if it was actually modified
+    if (isValueModified && formData.value.trim() !== "") {
       updateData.value = formData.value.trim();
     }
     if (formData.sensitive !== variable.sensitive) {
@@ -152,8 +179,8 @@ export const EditEnvVarModal = ({
       updateData.env_type_id = formData.env_type_id;
     }
 
-    onSave(variable.id, updateData);
-  }, [variable, formData, validateForm, isSaving, onSave]);
+    onSave(updateData);
+  }, [variable, formData, validateForm, isSaving, onSave, isValueModified]);
 
   // Handle modal close
   const handleClose = useCallback(() => {
@@ -161,6 +188,8 @@ export const EditEnvVarModal = ({
   }, [onOpenChange]);
 
   if (!variable) return null;
+
+  const isSensitiveAndHidden = variable.sensitive && !showSensitiveValue && !isValueModified;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -246,28 +275,93 @@ export const EditEnvVarModal = ({
 
           {/* Variable Value */}
           <div className="space-y-2">
-            <Label htmlFor="edit-var-value" className="text-white">
-              Variable Value *
-            </Label>
-            <Textarea
-              id="edit-var-value"
-              value={formData.value}
-              onChange={(e) => handleInputChange("value", e.target.value)}
-              className={`bg-slate-900 border-slate-700 text-white font-mono min-h-[100px] ${
-                formErrors.value ? "border-red-500" : ""
-              }`}
-              placeholder="Enter the variable value..."
-              disabled={isSaving}
-              maxLength={MAX_VALUE_LENGTH}
-            />
+            <div className="flex items-center justify-between">
+              <Label htmlFor="edit-var-value" className="text-white">
+                Variable Value *
+              </Label>
+              {variable.sensitive && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={showSensitiveValue ? handleHideSensitiveValue : handleRevealSensitiveValue}
+                  disabled={isSaving || isValueModified}
+                  className="text-slate-400 hover:text-white h-auto p-1"
+                >
+                  {showSensitiveValue ? (
+                    <>
+                      <EyeOff className="w-4 h-4 mr-1" />
+                      Hide
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4 mr-1" />
+                      Reveal
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+            
+            {isSensitiveAndHidden ? (
+              <div className="bg-slate-900 border border-slate-700 rounded-md p-4 min-h-[100px] flex items-center justify-center">
+                <div className="text-center">
+                  <Shield className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                  <p className="text-slate-400 text-sm mb-3">
+                    This is a sensitive value and is hidden for security
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRevealSensitiveValue}
+                    className="text-slate-300 border-slate-600 hover:bg-slate-700"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Click to edit
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <Textarea
+                  id="edit-var-value"
+                  value={formData.value}
+                  onChange={(e) => handleInputChange("value", e.target.value)}
+                  className={`bg-slate-900 border-slate-700 text-white font-mono min-h-[100px] ${
+                    formErrors.value ? "border-red-500" : ""
+                  } ${variable.sensitive ? "pr-12" : ""}`}
+                  placeholder={
+                    variable.sensitive && !isValueModified
+                      ? "Enter new value to update..."
+                      : "Enter the variable value..."
+                  }
+                  disabled={isSaving}
+                  maxLength={MAX_VALUE_LENGTH}
+                />
+                {variable.sensitive && showSensitiveValue && (
+                  <div className="absolute top-2 right-2">
+                    <Shield className="w-4 h-4 text-red-400" />
+                  </div>
+                )}
+              </div>
+            )}
+            
             {formErrors.value && (
               <p className="text-red-400 text-sm">{formErrors.value}</p>
             )}
             <div className="flex justify-between text-xs text-slate-400">
-              <span>Value will be stored securely</span>
               <span>
-                {formData.value.length}/{MAX_VALUE_LENGTH}
+                {variable.sensitive 
+                  ? "Sensitive values are encrypted and hidden by default"
+                  : "Value will be stored securely"
+                }
               </span>
+              {!isSensitiveAndHidden && (
+                <span>
+                  {formData.value.length}/{MAX_VALUE_LENGTH}
+                </span>
+              )}
             </div>
           </div>
 
@@ -314,7 +408,7 @@ export const EditEnvVarModal = ({
                     • Key: {variable.key} → {formData.key}
                   </div>
                 )}
-                {formData.value !== variable.value && (
+                {isValueModified && formData.value.trim() !== "" && (
                   <div>• Value: Updated</div>
                 )}
                 {formData.sensitive !== variable.sensitive && (
@@ -355,6 +449,14 @@ export const EditEnvVarModal = ({
                     {variable.sensitive ? "Secret" : "Variable"}
                   </span>
                 </div>
+                {variable.sensitive && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-slate-500">Value:</span>
+                    <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded font-mono">
+                      ••••••••
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -379,9 +481,36 @@ export const EditEnvVarModal = ({
                     {formData.sensitive ? "Secret" : "Variable"}
                   </span>
                 </div>
+                {isValueModified && formData.sensitive && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-slate-500">Value:</span>
+                    <span className="text-xs text-emerald-400 bg-slate-800 px-2 py-1 rounded font-mono">
+                      Updated
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Security Notice for Sensitive Values */}
+          {variable.sensitive && (
+            <div className="bg-red-900/10 border border-red-800/30 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Shield className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-medium text-red-400 mb-1">
+                    Security Notice
+                  </h4>
+                  <p className="text-xs text-red-300/80">
+                    This is a sensitive environment variable. The current value is hidden for security.
+                    {!isValueModified && " Only modify if you need to update the secret value."}
+                    {isValueModified && " Make sure to save your changes to update the secret."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
@@ -400,7 +529,7 @@ export const EditEnvVarModal = ({
               isSaving ||
               !hasUnsavedChanges ||
               !formData.key ||
-              !formData.value ||
+              (!formData.value && (!variable.sensitive || isValueModified)) ||
               !formData.env_type_id
             }
           >

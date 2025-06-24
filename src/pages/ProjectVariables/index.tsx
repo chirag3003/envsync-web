@@ -30,6 +30,7 @@ export const ProjectEnvironments = () => {
     project,
     environmentTypes,
     environmentVariables,
+    secrets,
     isLoading,
     error,
 
@@ -38,6 +39,10 @@ export const ProjectEnvironments = () => {
     updateVariable,
     deleteVariable,
     bulkImportVariables,
+    createSecret,
+    updateSecret,
+    deleteSecret,
+    bulkImportSecrets,
 
     // Utility functions
     refetch,
@@ -64,12 +69,11 @@ export const ProjectEnvironments = () => {
   );
 
   const handleEditVariable = (
-    variableId: string,
     data: Partial<EnvVarFormData>
   ) => {
     console.log(data);
     updateVariable.mutate(
-      { variableId, data },
+      { data },
       {
         onSuccess: () => {
           setShowEditModal(false);
@@ -182,7 +186,7 @@ export const ProjectEnvironments = () => {
           bulkImportVariables.isPending
         }
         projectName={project.name}
-        totalSecrets={0}
+        totalSecrets={secrets.length}
         totalVariables={environmentVariables.length}
         onBack={onBack}
         onAddVariable={() => setShowAddModal(true)}

@@ -147,10 +147,12 @@ export const ApplicationCard = ({
               <Key className="w-3 h-3" />
               <span>{app.env_count || 0} vars</span>
             </div>
-            <div className="flex items-center space-x-1 text-slate-400">
-              <Shield className="w-3 h-3" />
+            {app.enable_secrets && (
+              <div className="flex items-center space-x-1 text-slate-400">
+                <Shield className="w-3 h-3" />
               <span>{app.secret_count || 0} secrets</span>
             </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-1 text-slate-400">

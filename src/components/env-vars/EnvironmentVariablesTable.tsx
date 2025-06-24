@@ -41,6 +41,7 @@ interface EnvironmentVariablesTableProps {
   canEdit: boolean;
   onEdit: (variable: EnvironmentVariable) => void;
   onDelete: (variable: EnvironmentVariable) => void;
+  isSecrets?: boolean; // Optional prop to indicate if these are secrets
 }
 
 export const EnvironmentVariablesTable = ({
@@ -49,6 +50,7 @@ export const EnvironmentVariablesTable = ({
   canEdit,
   onEdit,
   onDelete,
+  isSecrets
 }: EnvironmentVariablesTableProps) => {
   const copy = useCopy();
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,7 +135,7 @@ export const EnvironmentVariablesTable = ({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <CardTitle className="text-white flex items-center">
             <Key className="size-8 mr-2 bg-emerald-500 border border-emerald-700 p-2 stroke-[3] text-white rounded-md" />
-            Environment Variables ({filteredVariables.length})
+            {isSecrets ? "Secrets" : "Environment Variables"} ({filteredVariables.length})
           </CardTitle>
 
           {/* Filters */}
@@ -318,6 +320,7 @@ export const EnvironmentVariablesTable = ({
                               onClick={() =>
                                 toggleSensitiveVisibility(variable.id)
                               }
+                              disabled={variable.sensitive}
                             >
                               {showSensitive[variable.id] ? (
                                 <EyeOff className="h-3 w-3" />
@@ -331,6 +334,7 @@ export const EnvironmentVariablesTable = ({
                                 variant="ghost"
                                 className="h-6 w-6 p-0 text-slate-400 hover:text-white"
                                 onClick={() => copy.mutate(variable.value)}
+                                disabled={variable.sensitive}
                               >
                                 <Copy className="h-3 w-3" />
                               </Button>

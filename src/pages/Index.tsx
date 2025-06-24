@@ -11,7 +11,8 @@ import Users from "@/pages/Users";
 import Callback from "@/pages/Callback";
 import NotFound from "@/pages/NotFound";
 import ApiKeys from "@/pages/ApiKeys";
-import ProjectEnvironments from "@/pages/Projects";
+import ProjectEnvironments from "@/pages/ProjectVariables";
+import ProjectSecrets from "@/pages/ProjectSecrets";
 import CreateProject from "@/pages/CreateProject";
 import ManageEnvironment from "@/pages/ManageEnvironment";
 
@@ -27,6 +28,10 @@ export const Index = () => {
           <Route
             path="applications/:projectNameId"
             element={<ProjectEnvironments />}
+          />
+          <Route
+            path="applications/:projectNameId/secrets"
+            element={<ProjectSecrets />}
           />
           <Route
             path="applications/:projectNameId/manage-environments"

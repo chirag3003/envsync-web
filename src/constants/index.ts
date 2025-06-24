@@ -93,6 +93,9 @@ export interface App {
   updated_at: Date;
   env_count?: number;
   secret_count?: number;
+  is_managed_secret?: boolean;
+  public_key?: string;
+  enable_secrets?: boolean;
 }
 
 export interface FilterOptions {
@@ -252,12 +255,14 @@ export const SENSITIVE_KEYWORDS = [
 export const ENV_TYPE_COLORS = [
   "#ef4444", // red
   "#f97316", // orange
+  "#f59e0b", // amber
   "#eab308", // yellow
   "#22c55e", // green
   "#06b6d4", // cyan
   "#3b82f6", // blue
   "#6366f1", // indigo
   "#8b5cf6", // violet
+  "#a855f7", // purple
+  "#f472b6", // rose
   "#ec4899", // pink
-  "#f59e0b", // amber
 ] as const;

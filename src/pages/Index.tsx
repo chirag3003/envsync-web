@@ -15,6 +15,7 @@ import ProjectEnvironments from "@/pages/ProjectVariables";
 import ProjectSecrets from "@/pages/ProjectSecrets";
 import CreateProject from "@/pages/CreateProject";
 import ManageEnvironment from "@/pages/ManageEnvironment";
+import { PointInTime } from "@/pages/PointInTime";
 
 export const Index = () => {
   return (
@@ -36,6 +37,14 @@ export const Index = () => {
           <Route
             path="applications/:projectNameId/manage-environments"
             element={<ManageEnvironment />}
+          />
+          <Route
+            path="applications/pit/:projectNameId/environments"
+            element={<PointInTime />}
+          />
+          <Route
+            path="applications/pit/:projectNameId/environments/secrets"
+            element={<PointInTime />}
           />
           <Route path="roles" element={<Roles />} />
           <Route path="users" element={<Users />} />

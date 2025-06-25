@@ -52,6 +52,8 @@ export const useProjectEnvironments = (projectNameId: string) => {
           id: envType.id,
           name: envType.name,
           color: envType.color || "#6366f1",
+          is_default: envType.is_default,
+          is_protected: envType.is_protected,
         })
       );
 

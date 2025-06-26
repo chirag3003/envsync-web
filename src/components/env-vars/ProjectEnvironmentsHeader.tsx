@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +17,7 @@ import {
   Database,
   ChevronDown,
   Shield,
-  Key,
+  MoreVertical
 } from "lucide-react";
 
 interface ProjectEnvironmentsHeaderProps {
@@ -51,19 +50,19 @@ export const ProjectEnvironmentsHeader = ({
   onManageEnvironments,
 }: ProjectEnvironmentsHeaderProps) => {
   const navigate = useNavigate();
-  const { projectId } = useParams();
+  const { projectNameId } = useParams();
   const location = useLocation();
-  
+
   // Determine current section based on route
   const isSecretsPage = location.pathname.includes('/secrets');
   const currentSection = isSecretsPage ? 'Secrets' : 'Environments';
 
   const handleSectionChange = (section: 'environments' | 'secrets') => {
-    if (!projectId) return;
-    
-    const basePath = `/applications/${projectId}`;
+    if (!projectNameId) return;
+
+    const basePath = `/applications/${projectNameId}`;
     const targetPath = section === 'secrets' ? `${basePath}/secrets` : basePath;
-    
+
     navigate(targetPath);
   };
 
@@ -83,7 +82,7 @@ export const ProjectEnvironmentsHeader = ({
         <span className="text-slate-500">/</span>
         <span className="text-slate-300">{projectName}</span>
         <span className="text-slate-500">/</span>
-        
+
         {/* Section Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -101,15 +100,14 @@ export const ProjectEnvironmentsHeader = ({
               <ChevronDown className="w-4 h-4 ml-2" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent 
+          <DropdownMenuContent
             className="bg-slate-800 border-slate-700 min-w-[200px]"
             align="start"
           >
             <DropdownMenuItem
               onClick={() => handleSectionChange('environments')}
-              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${
-                !isSecretsPage ? 'bg-slate-700' : ''
-              }`}
+              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${!isSecretsPage ? 'bg-slate-700' : ''
+                }`}
             >
               <Settings className="w-4 h-4 mr-3 text-emerald-400" />
               <div className="flex flex-col">
@@ -121,9 +119,8 @@ export const ProjectEnvironmentsHeader = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleSectionChange('secrets')}
-              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${
-                isSecretsPage ? 'bg-slate-700' : ''
-              }`}
+              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${isSecretsPage ? 'bg-slate-700' : ''
+                }`}
             >
               <Shield className="w-4 h-4 mr-3 text-red-400" />
               <div className="flex flex-col">
@@ -147,7 +144,7 @@ export const ProjectEnvironmentsHeader = ({
             <div>
               <h1 className="text-3xl font-bold text-white">{projectName}</h1>
               <p className="text-slate-400">
-                {isSecretsPage 
+                {isSecretsPage
                   ? "Sensitive Variables & Credentials Management"
                   : "Environment Variables & Configuration"
                 }
@@ -194,40 +191,53 @@ export const ProjectEnvironmentsHeader = ({
 
         {/* Actions */}
         <div className="flex items-center space-x-3">
-          <Button
-            onClick={onRefresh}
-            variant="outline"
-            size="sm"
-            className="text-slate-400 border-slate-600 hover:bg-slate-700"
-            disabled={isRefetching}
-          >
-            <RefreshCw
-              className={`w-4 h-4 ${isRefetching ? "animate-spin" : ""}`}
-            />
-          </Button>
-
-          <Button
-            onClick={onExport}
-            variant="outline"
-            size="sm"
-            className="text-slate-400 border-slate-600 hover:bg-slate-700"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-
-          {canEdit && (
-            <>
+          {/* Options Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
-                onClick={onManageEnvironments}
                 variant="outline"
                 size="sm"
                 className="text-slate-400 border-slate-600 hover:bg-slate-700"
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Manage Environments
+                <MoreVertical className="w-4 h-4" />
               </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="bg-slate-800 border-slate-700 min-w-[160px]"
+              align="end"
+            >
+              <DropdownMenuItem
+                onClick={onRefresh}
+                disabled={isRefetching}
+                className="text-white hover:bg-slate-700 cursor-pointer"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${isRefetching ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onExport}
+                className="text-white hover:bg-slate-700 cursor-pointer"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </DropdownMenuItem>
+              {canEdit && (
+                <DropdownMenuItem
+                  onClick={onManageEnvironments}
+                  className="text-white hover:bg-slate-700 cursor-pointer"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Manage Environments
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
+          {canEdit && (
+
+            <>
               <Button
                 onClick={onBulkImport}
                 variant="outline"
@@ -239,11 +249,10 @@ export const ProjectEnvironmentsHeader = ({
 
               <Button
                 onClick={onAddVariable}
-                className={`text-white ${
-                  isSecretsPage 
-                    ? "bg-red-500 hover:bg-red-600" 
-                    : "bg-emerald-500 hover:bg-emerald-600"
-                }`}
+                className={`text-white ${isSecretsPage
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-emerald-500 hover:bg-emerald-600"
+                  }`}
               >
                 {isSecretsPage ? (
                   <>

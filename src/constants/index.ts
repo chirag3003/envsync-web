@@ -145,6 +145,8 @@ export interface EnvironmentType {
   id: string;
   name: string;
   color: string;
+  is_default: boolean;
+  is_protected: boolean;
 }
 
 export interface EnvironmentVariable {

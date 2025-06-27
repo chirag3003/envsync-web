@@ -11,11 +11,12 @@ import Users from "@/pages/Users";
 import Callback from "@/pages/Callback";
 import NotFound from "@/pages/NotFound";
 import ApiKeys from "@/pages/ApiKeys";
+import Webhooks from "@/pages/Webhooks";
 import ProjectEnvironments from "@/pages/ProjectVariables";
 import ProjectSecrets from "@/pages/ProjectSecrets";
 import CreateProject from "@/pages/CreateProject";
 import ManageEnvironment from "@/pages/ManageEnvironment";
-import { PointInTime } from "@/pages/PointInTime";
+import PointInTime from "@/pages/PointInTime";
 
 export const Index = () => {
   return (
@@ -39,11 +40,11 @@ export const Index = () => {
             element={<ManageEnvironment />}
           />
           <Route
-            path="applications/pit/:projectNameId/environments"
+            path="applications/pit/:projectNameId"
             element={<PointInTime />}
           />
           <Route
-            path="applications/pit/:projectNameId/environments/secrets"
+            path="applications/pit/:projectNameId/secrets"
             element={<PointInTime />}
           />
           <Route path="roles" element={<Roles />} />
@@ -52,6 +53,7 @@ export const Index = () => {
           <Route path="organisation" element={<OrgSettings />} />
           <Route path="audit" element={<AuditLogs />} />
           <Route path="apikeys" element={<ApiKeys />} />
+          <Route path="webhooks" element={<Webhooks />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

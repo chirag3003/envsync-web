@@ -25,5 +25,7 @@ export const useInvalidateQueries = () => {
       queryClient.invalidateQueries({
         queryKey: [API_KEYS.ALL_ENVIRONMENT_VARIABLES],
       }),
+    invalidateWebhooks: () =>
+      queryClient.invalidateQueries({ queryKey: [API_KEYS.ALL_WEBHOOKS] }),
   };
 };

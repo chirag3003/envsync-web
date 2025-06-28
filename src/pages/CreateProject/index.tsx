@@ -5,23 +5,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, FolderPlus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Plus, FolderPlus, Shield, Key, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { TooltipTrigger, Tooltip, TooltipContent } from "@/components/ui/tooltip";
 
 interface CreateProjectFormData {
   name: string;
   description: string;
+  enableSecrets: boolean;
+  publicKey: string;
 }
 
 interface CreateProjectFormErrors {
   name?: string;
   description?: string;
+  publicKey?: string;
 }
 
 const MAX_NAME_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_PUBLIC_KEY_LENGTH = 2000;
 const PROJECT_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9-_\s]*[a-zA-Z0-9]$/;
 
 export const CreateProject = () => {
@@ -32,6 +38,8 @@ export const CreateProject = () => {
   const [formData, setFormData] = useState<CreateProjectFormData>({
     name: "",
     description: "",
+    enableSecrets: false,
+    publicKey: "",
   });
   const [formErrors, setFormErrors] = useState<CreateProjectFormErrors>({});
 
@@ -62,12 +70,18 @@ export const CreateProject = () => {
 
   // Handle input changes
   const handleInputChange = useCallback(
-    (field: keyof CreateProjectFormData, value: string) => {
+    (field: keyof CreateProjectFormData, value: string | boolean) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
 
       // Clear field error when user starts typing
-      if (formErrors[field]) {
+      if (formErrors[field as keyof CreateProjectFormErrors]) {
         setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+
+      // Clear public key when secrets are disabled
+      if (field === "enableSecrets" && !value) {
+        setFormData((prev) => ({ ...prev, publicKey: "" }));
+        setFormErrors((prev) => ({ ...prev, publicKey: undefined }));
       }
     },
     [formErrors]
@@ -79,6 +93,8 @@ export const CreateProject = () => {
       return await api.applications.createApp({
         name: data.name.trim(),
         description: data.description.trim() || undefined,
+        enable_secrets: data.enableSecrets,
+        public_key: data.enableSecrets ? data.publicKey.trim() : undefined,
       });
     },
     onSuccess: (response) => {
@@ -195,6 +211,71 @@ export const CreateProject = () => {
               </div>
             </div>
 
+            {/* Enable Secrets */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-white flex items-center">
+                    <Shield className="w-4 h-4 mr-2 text-pink-500" />
+                    Enable Secrets
+                  </Label>
+                  <p className="text-xs text-slate-400">
+                    Enable encryption for sensitive environment variables
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.enableSecrets}
+                  onCheckedChange={(checked) =>
+                    handleInputChange("enableSecrets", checked)
+                  }
+                  disabled={createProject.isPending}
+                  className="data-[state=checked]:bg-emerald-500"
+                />
+              </div>
+            </div>
+
+            {/* Public Key (conditional) */}
+            {formData.enableSecrets && (
+              <div className="space-y-2">
+                <Label htmlFor="public-key" className="text-white flex items-center">
+                  <Key className="w-4 h-4 mr-2 text-yellow-500" />
+                  Public Key (Optional)
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 ml-2 text-slate-400 hover:text-slate-300 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Leave empty for managed secrets</p>
+                      </TooltipContent>
+                    </Tooltip>
+                </Label>
+                <Textarea
+                  id="public-key"
+                  value={formData.publicKey}
+                  onChange={(e) =>
+                    handleInputChange("publicKey", e.target.value)
+                  }
+                  className={`bg-slate-900 border-slate-700 text-white min-h-[120px] font-mono text-sm ${
+                    formErrors.publicKey ? "border-red-500" : ""
+                  }`}
+                  placeholder={`-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+-----END PUBLIC KEY-----`}
+                  disabled={createProject.isPending}
+                  maxLength={MAX_PUBLIC_KEY_LENGTH}
+                />
+                {formErrors.publicKey && (
+                  <p className="text-red-400 text-sm">{formErrors.publicKey}</p>
+                )}
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Paste your RSA public key for secret encryption</span>
+                  <span>
+                    {formData.publicKey.length}/{MAX_PUBLIC_KEY_LENGTH}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Project Preview */}
             <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
               <h4 className="text-sm font-medium text-white mb-3">
@@ -215,6 +296,36 @@ export const CreateProject = () => {
                     {formData.description || "No description provided"}
                   </span>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-slate-500">Secrets:</span>
+                  <span className={`text-sm font-medium ${
+                    formData.enableSecrets ? "text-pink-400" : "text-slate-400"
+                  }`}>
+                    {formData.enableSecrets ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+                {formData.enableSecrets && formData.publicKey && (
+                  <div className="flex items-start space-x-2">
+                    <span className="text-xs text-slate-500 mt-0.5">
+                      Public Key:
+                    </span>
+                    <span className="text-sm text-yellow-400 font-mono">
+                      {formData.publicKey.length > 50 
+                        ? `${formData.publicKey.substring(0, 50)}...` 
+                        : formData.publicKey || "Not provided"}
+                    </span>
+                  </div>
+                )}
+                {formData.enableSecrets && !formData.publicKey && (
+                  <div className="flex items-start space-x-2">
+                    <span className="text-xs text-slate-500 mt-0.5">
+                      Public Key: 
+                    </span>
+                    <span className="text-sm text-yellow-400 font-mono">
+                      Managed secrets
+                    </span>
+                  </div>
+                ) }
               </div>
             </div>
 
@@ -263,6 +374,9 @@ export const CreateProject = () => {
               • You can start adding environment variables for different
               environments
             </p>
+            {formData.enableSecrets && (
+              <p>• Secret variables will be encrypted using your public key</p>
+            )}
             <p>• Team members can be given access to manage the project</p>
             <p>
               • You can integrate with your deployment pipeline using our CLI or

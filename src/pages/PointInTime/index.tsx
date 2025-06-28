@@ -23,7 +23,6 @@ export interface PointInTimeData {
     operation: string;
 }
 
-// TODO: Mock data - remove this once we have the real data
 const staticPitData: PointInTimeData[] = [
     {
         "pit_id": "pit_123",

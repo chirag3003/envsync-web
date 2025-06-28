@@ -1,12 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { MutationOptions, sdk } from "./base";
-import {
-  ApiKeyResponse,
-  RegenerateApiKeyResponse,
-  UpdateApiKeyRequest,
-} from "@envsync-cloud/envsync-ts-sdk";
+import { useQuery } from "@tanstack/react-query";
+import { sdk } from "./base";
 import { API_KEYS, App } from "../constants";
-import { useInvalidateQueries } from "@/hooks/useApi";
 
 const useApplications = ({ refetchInterval = 5 * 60 * 1000 } = {}) => {
   return useQuery({

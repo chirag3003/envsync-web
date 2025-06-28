@@ -6,11 +6,13 @@ import {
   Settings,
   Globe,
   ShieldAlert,
+  Anchor
 } from "lucide-react";
 import type { FC } from "react";
 
 export enum API_KEYS {
   ALL_API_KEYS = "api-keys",
+  ALL_WEBHOOKS = "webhooks",
   ALL_APPLICATIONS = "applications/all",
   ALL_USERS = "users/all",
   ALL_ROLES = "roles/all",
@@ -26,6 +28,7 @@ export const SCOPES = [
   "users",
   "roles",
   "apikeys",
+  "webhooks",
   "audit",
   "settings",
   "organisation",
@@ -36,6 +39,7 @@ export const navItems = [
   { id: "users", name: "Team", icon: Users },
   { id: "roles", name: "Roles", icon: ShieldAlert },
   { id: "apikeys", name: "API Keys", icon: Key },
+  { id: "webhooks", name: "Webhooks", icon: Anchor },
   { id: "audit", name: "Activity", icon: Activity },
   { id: "settings", name: "Account", icon: Settings },
   { id: "organisation", name: "Organisation", icon: Globe },
@@ -268,3 +272,278 @@ export const ENV_TYPE_COLORS = [
   "#f472b6", // rose
   "#ec4899", // pink
 ] as const;
+
+export const WEBHOOK_EVENT_CATEGORIES = [
+  {
+    name: "roles",
+    label: "Roles & Permissions",
+    subcategories: [
+      {
+        name: "role_operations",
+        label: "Role Operations",
+        events: [
+          { value: "roles_viewed", label: "Roles Viewed" },
+          { value: "role_viewed", label: "Role Viewed" },
+          { value: "role_created", label: "Role Created" },
+          { value: "role_updated", label: "Role Updated" },
+          { value: "role_deleted", label: "Role Deleted" }
+        ]
+      }
+    ],
+    events: [
+      { value: "roles_viewed", label: "Roles Viewed" },
+      { value: "role_viewed", label: "Role Viewed" },
+      { value: "role_created", label: "Role Created" },
+      { value: "role_updated", label: "Role Updated" },
+      { value: "role_deleted", label: "Role Deleted" }
+    ]
+  },
+  {
+    name: "applications",
+    label: "Applications",
+    subcategories: [
+      {
+        name: "app_operations",
+        label: "App Operations",
+        events: [
+          { value: "app_created", label: "App Created" },
+          { value: "app_updated", label: "App Updated" },
+          { value: "app_viewed", label: "App Viewed" },
+          { value: "apps_viewed", label: "Apps Viewed" },
+          { value: "app_deleted", label: "App Deleted" }
+        ]
+      }
+    ],
+    events: [
+      { value: "app_created", label: "App Created" },
+      { value: "app_updated", label: "App Updated" },
+      { value: "app_viewed", label: "App Viewed" },
+      { value: "apps_viewed", label: "Apps Viewed" },
+      { value: "app_deleted", label: "App Deleted" }
+    ]
+  },
+  {
+    name: "organization",
+    label: "Organization",
+    subcategories: [
+      {
+        name: "org_operations",
+        label: "Organization Operations",
+        events: [
+          { value: "org_created", label: "Organization Created" },
+          { value: "org_updated", label: "Organization Updated" }
+        ]
+      }
+    ],
+    events: [
+      { value: "org_created", label: "Organization Created" },
+      { value: "org_updated", label: "Organization Updated" }
+    ]
+  },
+  {
+    name: "users",
+    label: "Users & Invites",
+    subcategories: [
+      {
+        name: "user_operations",
+        label: "User Operations",
+        events: [
+          { value: "user_deleted", label: "User Deleted" },
+          { value: "user_retrieved", label: "User Retrieved" },
+          { value: "users_retrieved", label: "Users Retrieved" },
+          { value: "user_role_updated", label: "User Role Updated" },
+          { value: "user_updated", label: "User Updated" }
+        ]
+      },
+      {
+        name: "user_invites",
+        label: "User Invites",
+        events: [
+          { value: "user_invite_accepted", label: "User Invite Accepted" },
+          { value: "user_invite_created", label: "User Invite Created" },
+          { value: "user_invite_deleted", label: "User Invite Deleted" },
+          { value: "user_invite_updated", label: "User Invite Updated" },
+          { value: "user_invite_viewed", label: "User Invite Viewed" }
+        ]
+      }
+    ],
+    events: [
+      { value: "user_deleted", label: "User Deleted" },
+      { value: "user_invite_accepted", label: "User Invite Accepted" },
+      { value: "user_invite_created", label: "User Invite Created" },
+      { value: "user_invite_deleted", label: "User Invite Deleted" },
+      { value: "user_invite_updated", label: "User Invite Updated" },
+      { value: "user_invite_viewed", label: "User Invite Viewed" },
+      { value: "user_retrieved", label: "User Retrieved" },
+      { value: "users_retrieved", label: "Users Retrieved" },
+      { value: "user_role_updated", label: "User Role Updated" },
+      { value: "user_updated", label: "User Updated" }
+    ]
+  },
+  {
+    name: "environment",
+    label: "Environment Variables",
+    subcategories: [
+      {
+        name: "env_operations",
+        label: "Environment Operations",
+        events: [
+          { value: "env_created", label: "Environment Created" },
+          { value: "env_updated", label: "Environment Updated" },
+          { value: "env_deleted", label: "Environment Deleted" },
+          { value: "env_viewed", label: "Environment Viewed" },
+          { value: "envs_viewed", label: "Environments Viewed" }
+        ]
+      },
+      {
+        name: "env_batch",
+        label: "Batch Operations",
+        events: [
+          { value: "envs_batch_updated", label: "Environments Batch Updated" },
+          { value: "envs_batch_created", label: "Environments Batch Created" },
+          { value: "envs_batch_deleted", label: "Environments Batch Deleted" }
+        ]
+      },
+      {
+        name: "env_rollback",
+        label: "Rollback Operations",
+        events: [
+          { value: "envs_rollback_pit", label: "Environments Rollback PIT" },
+          { value: "envs_rollback_timestamp", label: "Environments Rollback Timestamp" },
+          { value: "env_variable_rollback_pit", label: "Environment Variable Rollback PIT" },
+          { value: "env_variable_rollback_timestamp", label: "Environment Variable Rollback Timestamp" }
+        ]
+      }
+    ],
+    events: [
+      { value: "env_created", label: "Environment Created" },
+      { value: "env_updated", label: "Environment Updated" },
+      { value: "env_deleted", label: "Environment Deleted" },
+      { value: "env_viewed", label: "Environment Viewed" },
+      { value: "envs_viewed", label: "Environments Viewed" },
+      { value: "envs_batch_updated", label: "Environments Batch Updated" },
+      { value: "envs_batch_created", label: "Environments Batch Created" },
+      { value: "envs_batch_deleted", label: "Environments Batch Deleted" },
+      { value: "envs_rollback_pit", label: "Environments Rollback PIT" },
+      { value: "envs_rollback_timestamp", label: "Environments Rollback Timestamp" },
+      { value: "env_variable_rollback_pit", label: "Environment Variable Rollback PIT" },
+      { value: "env_variable_rollback_timestamp", label: "Environment Variable Rollback Timestamp" }
+    ]
+  },
+  {
+    name: "secrets",
+    label: "Secrets Management",
+    subcategories: [
+      {
+        name: "secret_operations",
+        label: "Secret Operations",
+        events: [
+          { value: "secret_created", label: "Secret Created" },
+          { value: "secret_updated", label: "Secret Updated" },
+          { value: "secret_deleted", label: "Secret Deleted" },
+          { value: "secret_viewed", label: "Secret Viewed" },
+          { value: "secrets_viewed", label: "Secrets Viewed" }
+        ]
+      },
+      {
+        name: "secret_batch",
+        label: "Batch Operations",
+        events: [
+          { value: "secrets_batch_updated", label: "Secrets Batch Updated" },
+          { value: "secrets_batch_created", label: "Secrets Batch Created" },
+          { value: "secrets_batch_deleted", label: "Secrets Batch Deleted" }
+        ]
+      },
+      {
+        name: "secret_rollback",
+        label: "Rollback Operations",
+        events: [
+          { value: "secrets_rollback_pit", label: "Secrets Rollback PIT" },
+          { value: "secrets_rollback_timestamp", label: "Secrets Rollback Timestamp" },
+          { value: "secret_variable_rollback_pit", label: "Secret Variable Rollback PIT" },
+          { value: "secret_variable_rollback_timestamp", label: "Secret Variable Rollback Timestamp" }
+        ]
+      }
+    ],
+    events: [
+      { value: "secret_created", label: "Secret Created" },
+      { value: "secret_updated", label: "Secret Updated" },
+      { value: "secret_deleted", label: "Secret Deleted" },
+      { value: "secret_viewed", label: "Secret Viewed" },
+      { value: "secrets_viewed", label: "Secrets Viewed" },
+      { value: "secrets_batch_updated", label: "Secrets Batch Updated" },
+      { value: "secrets_batch_created", label: "Secrets Batch Created" },
+      { value: "secrets_batch_deleted", label: "Secrets Batch Deleted" },
+      { value: "secrets_rollback_pit", label: "Secrets Rollback PIT" },
+      { value: "secrets_rollback_timestamp", label: "Secrets Rollback Timestamp" },
+      { value: "secret_variable_rollback_pit", label: "Secret Variable Rollback PIT" },
+      { value: "secret_variable_rollback_timestamp", label: "Secret Variable Rollback Timestamp" }
+    ]
+  },
+  {
+    name: "env_types",
+    label: "Environment Types",
+    subcategories: [
+      {
+        name: "env_type_operations",
+        label: "Environment Type Operations",
+        events: [
+          { value: "env_type_viewed", label: "Environment Type Viewed" },
+          { value: "env_types_viewed", label: "Environment Types Viewed" },
+          { value: "env_type_created", label: "Environment Type Created" },
+          { value: "env_type_updated", label: "Environment Type Updated" },
+          { value: "env_type_deleted", label: "Environment Type Deleted" }
+        ]
+      }
+    ],
+    events: [
+      { value: "env_type_viewed", label: "Environment Type Viewed" },
+      { value: "env_types_viewed", label: "Environment Types Viewed" },
+      { value: "env_type_created", label: "Environment Type Created" },
+      { value: "env_type_updated", label: "Environment Type Updated" },
+      { value: "env_type_deleted", label: "Environment Type Deleted" }
+    ]
+  },
+  {
+    name: "api_keys",
+    label: "API Keys",
+    subcategories: [
+      {
+        name: "apikey_operations",
+        label: "API Key Operations",
+        events: [
+          { value: "apikey_created", label: "API Key Created" },
+          { value: "apikey_updated", label: "API Key Updated" },
+          { value: "apikey_deleted", label: "API Key Deleted" },
+          { value: "apikey_viewed", label: "API Key Viewed" },
+          { value: "apikeys_viewed", label: "API Keys Viewed" },
+          { value: "apikey_regenerated", label: "API Key Regenerated" }
+        ]
+      }
+    ],
+    events: [
+      { value: "apikey_created", label: "API Key Created" },
+      { value: "apikey_updated", label: "API Key Updated" },
+      { value: "apikey_deleted", label: "API Key Deleted" },
+      { value: "apikey_viewed", label: "API Key Viewed" },
+      { value: "apikeys_viewed", label: "API Keys Viewed" },
+      { value: "apikey_regenerated", label: "API Key Regenerated" }
+    ]
+  },
+  {
+    name: "audit",
+    label: "Audit & Monitoring",
+    subcategories: [
+      {
+        name: "audit_operations",
+        label: "Audit Operations",
+        events: [
+          { value: "get_audit_logs", label: "Get Audit Logs" }
+        ]
+      }
+    ],
+    events: [
+      { value: "get_audit_logs", label: "Get Audit Logs" }
+    ]
+  }
+];

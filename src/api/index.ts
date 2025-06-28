@@ -3,6 +3,7 @@ import { apiKeys } from "./api-keys.api";
 import { applications } from "./applications.api";
 import { roles } from "./roles.api";
 import { users } from "./users.api";
+import { webhooks } from "./webhooks.api";
 
 export const api = {
   sdk,
@@ -10,6 +11,7 @@ export const api = {
   applications,
   roles,
   users,
+  webhooks
 };
 
 export * from "./base";

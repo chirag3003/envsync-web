@@ -1,44 +1,46 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GitCompare, Plus, Minus, Edit, Loader2, ArrowRight, AlertCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { PointInTimeData } from "@/pages/PointInTime";
 import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from "../ui/select";
 import { Badge } from "../ui/badge";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Separator } from "../ui/separator";
-
-interface DiffResults {
-    added: Array<{
-        key: string;
-        value: string;
-    }>;
-    modified: Array<{
-        key: string;
-        old_value: string;
-        new_value: string;
-    }>;
-    deleted: Array<{
-        key: string;
-        value: string;
-    }>;
-}
+import { usePointInTimeDiff } from "@/api/pointInTime.api";
+import { toast } from "sonner";
 
 interface CheckDiffModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    pitData: PointInTimeData;
+    pitData: any;
     pitIdList: string[];
+    projectId: string;
+    environmentId: string;
 }
 
-export const CheckDiffModal = ({ isOpen, onOpenChange, pitData, pitIdList }: CheckDiffModalProps) => {
-    const [isLoading, setIsLoading] = useState(false);
+export const CheckDiffModal = ({ 
+    isOpen, 
+    onOpenChange, 
+    pitData, 
+    pitIdList, 
+    projectId, 
+    environmentId 
+}: CheckDiffModalProps) => {
+    const [fromPitId, setFromPitId] = useState<string>(pitData?.id || "");
+    const [toPitId, setToPitId] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
-    const [fromPitId, setFromPitId] = useState<string>(pitData.pit_id);
-    const [toPitId, setToPitId] = useState<string>(pitData.pit_id);
-    const [diffResults, setDiffResults] = useState<DiffResults | null>(null);
+
+    const diffMutation = usePointInTimeDiff();
+
+    // Reset form when modal opens/closes or pitData changes
+    useEffect(() => {
+        if (isOpen && pitData) {
+            setFromPitId(pitData.id);
+            setToPitId("");
+            setError(null);
+        }
+    }, [isOpen, pitData]);
 
     const handleCheckDiff = async () => {
         if (!fromPitId || !toPitId) {
@@ -51,32 +53,14 @@ export const CheckDiffModal = ({ isOpen, onOpenChange, pitData, pitIdList }: Che
             return;
         }
 
-        setIsLoading(true);
         setError(null);
 
-        // Simulate loading delay
-        setTimeout(() => {
-            // TODO: mock data - remove this once we have the real data
-            const staticDiffResults: DiffResults = {
-                added: [
-                    { key: "NEW_API_ENDPOINT", value: "https://api.newservice.com/v1" },
-                    { key: "JWT_SECRET", value: "super_secret_token_2024" },
-                    { key: "FEATURE_FLAG_NEW_UI", value: "true" }
-                ],
-                modified: [
-                    { key: "DATABASE_URL", old_value: "postgres://old-host:5432/db", new_value: "postgres://new-host:5432/db" },
-                    { key: "API_SECRET", old_value: "old_secret_123", new_value: "new_secret_456" },
-                    { key: "REDIS_TTL", old_value: "3600", new_value: "7200" }
-                ],
-                deleted: [
-                    { key: "DEPRECATED_SERVICE_URL", value: "https://old-service.com/api" },
-                    { key: "LEGACY_CONFIG", value: "old_config_value" }
-                ]
-            };
-
-            setDiffResults(staticDiffResults);
-            setIsLoading(false);
-        }, 1500);
+        diffMutation.mutate({
+            app_id: projectId,
+            env_type_id: environmentId,
+            from_pit_id: fromPitId,
+            to_pit_id: toPitId,
+        });
     };
 
     const getChangeIcon = (type: 'added' | 'modified' | 'deleted') => {
@@ -105,24 +89,42 @@ export const CheckDiffModal = ({ isOpen, onOpenChange, pitData, pitIdList }: Che
         );
     };
 
-    // Combine all changes into a single array for display
-    const allChanges = diffResults ? [
-        ...diffResults.added.map(item => ({ type: 'added' as const, ...item, old_value: undefined, new_value: item.value })),
-        ...diffResults.modified.map(item => ({ type: 'modified' as const, ...item, value: undefined })),
-        ...diffResults.deleted.map(item => ({ type: 'deleted' as const, ...item, old_value: item.value, new_value: undefined }))
-    ] : [];
-
     const resetModal = () => {
-        setDiffResults(null);
+        setFromPitId(pitData?.id || "");
+        setToPitId("");
         setError(null);
-        setFromPitId(pitData.pit_id);
-        setToPitId(pitData.pit_id);
+        diffMutation.reset();
     };
 
-    const showNoDiffMessage = !diffResults && !isLoading && fromPitId === toPitId;
+    const diffResults = diffMutation.data;
+    const isLoading = diffMutation.isPending;
+
+    // Combine all changes into a single array for display
+    const allChanges = diffResults ? [
+        ...diffResults.added.map(item => ({ 
+            type: 'added' as const, 
+            key: item.key, 
+            old_value: undefined, 
+            new_value: item.value 
+        })),
+        ...diffResults.modified.map(item => ({ 
+            type: 'modified' as const, 
+            key: item.key, 
+            old_value: item.old_value, 
+            new_value: item.new_value 
+        })),
+        ...diffResults.deleted.map(item => ({ 
+            type: 'deleted' as const, 
+            key: item.key, 
+            old_value: item.value, 
+            new_value: undefined 
+        }))
+    ] : [];
 
     const totalChanges = diffResults ? 
         diffResults.added.length + diffResults.modified.length + diffResults.deleted.length : 0;
+
+    const showNoDiffMessage = !diffResults && !isLoading && fromPitId === toPitId;
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
@@ -156,7 +158,7 @@ export const CheckDiffModal = ({ isOpen, onOpenChange, pitData, pitIdList }: Che
                                         <SelectContent className="bg-slate-800 border-slate-700 text-white">
                                             {pitIdList.map((pitId) => (
                                                 <SelectItem key={pitId} value={pitId} className="py-3">
-                                                    <code className="font-mono">{pitId}</code>
+                                                    <code className="font-mono">{pitId.slice(0, 8)}...</code>
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -178,7 +180,7 @@ export const CheckDiffModal = ({ isOpen, onOpenChange, pitData, pitIdList }: Che
                                         <SelectContent className="bg-slate-800 border-slate-700 text-white">
                                             {pitIdList.filter(id => id !== fromPitId).map((pitId) => (
                                                 <SelectItem key={pitId} value={pitId} className="py-3">
-                                                    <code className="font-mono">{pitId}</code>
+                                                    <code className="font-mono">{pitId.slice(0, 8)}...</code>
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -209,12 +211,14 @@ export const CheckDiffModal = ({ isOpen, onOpenChange, pitData, pitIdList }: Che
                     </Card>
 
                     {/* Error State */}
-                    {error && (
+                    {(error || diffMutation.error) && (
                         <Card className="bg-red-500/10 border-red-500/30">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-3">
                                     <AlertCircle className="w-5 h-5 text-red-400" />
-                                    <p className="text-red-200 font-medium">{error}</p>
+                                    <p className="text-red-200 font-medium">
+                                        {error || diffMutation.error?.message || "Failed to compare PITs"}
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>

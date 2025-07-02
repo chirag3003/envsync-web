@@ -1,3 +1,4 @@
+import { EnvironmentType } from "@/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -115,4 +116,15 @@ export const generateColorShades = (
     original: "#" + validHex,
     dark: darkHex,
   };
+};
+
+export const getDefaultEnvironmentType = (
+  environmentTypes: EnvironmentType[]
+): string => {
+  if (!environmentTypes || environmentTypes.length === 0) {
+    return "";
+  }
+  const defaultEnvType = environmentTypes.find((env) => env.is_default);
+
+  return defaultEnvType ? defaultEnvType.id : environmentTypes[0].id;
 };

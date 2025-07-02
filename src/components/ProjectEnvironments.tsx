@@ -32,7 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -99,14 +99,14 @@ export const ProjectEnvironments = ({
   const [parsedEnvVars, setParsedEnvVars] = useState<EnvironmentVariable[]>([]);
   const [bulkImportErrors, setBulkImportErrors] = useState<string[]>([]);
 
-
   // Dialog States
   const [showAddEnvVarDialog, setShowAddEnvVarDialog] = useState(false);
   const [showEditEnvVarDialog, setShowEditEnvVarDialog] = useState(false);
   const [showDeleteEnvVarDialog, setShowDeleteEnvVarDialog] = useState(false);
 
   // Form States
-  const [editingEnvVar, setEditingEnvVar] = useState<EnvironmentVariable | null>(null);
+  const [editingEnvVar, setEditingEnvVar] =
+    useState<EnvironmentVariable | null>(null);
   const [formData, setFormData] = useState<EnvVarFormData>({
     key: "",
     value: "",
@@ -115,23 +115,30 @@ export const ProjectEnvironments = ({
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   // Loading states for individual actions
-  const [actionLoadingStates, setActionLoadingStates] = useState<Record<string, boolean>>({});
+  const [actionLoadingStates, setActionLoadingStates] = useState<
+    Record<string, boolean>
+  >({});
 
   // Memoized color generator
   const getEnvironmentColor = useCallback((envName: string) => {
-    const index = Math.abs(
-      envName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    ) % ENVIRONMENT_COLORS.length;
+    const index =
+      Math.abs(
+        envName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
+      ) % ENVIRONMENT_COLORS.length;
     return ENVIRONMENT_COLORS[index];
   }, []);
 
   // Helper function to set loading state for individual actions
   const setActionLoading = useCallback((key: string, loading: boolean) => {
-    setActionLoadingStates(prev => ({ ...prev, [key]: loading }));
+    setActionLoadingStates((prev) => ({ ...prev, [key]: loading }));
   }, []);
 
   // Fetch project data and environment types
-  const { data: projectData, isLoading: isProjectLoading, error: projectError } = useQuery({
+  const {
+    data: projectData,
+    isLoading: isProjectLoading,
+    error: projectError,
+  } = useQuery({
     queryKey: ["project", projectNameId],
     queryFn: async () => {
       const appData = await api.applications.getApp(projectNameId);
@@ -161,7 +168,7 @@ export const ProjectEnvironments = ({
     data: envVars = [],
     isLoading: isEnvVarsLoading,
     error: envVarsError,
-    refetch: refetchEnvVars
+    refetch: refetchEnvVars,
   } = useQuery({
     queryKey: ["envVars", projectNameId, selectedEnv],
     queryFn: async () => {
@@ -182,63 +189,68 @@ export const ProjectEnvironments = ({
   });
 
   // Add this function after existing helper functions
-  const parseEnvFile = useCallback((content: string): { vars: EnvironmentVariable[], errors: string[] } => {
-    const lines = content.split('\n');
-    const vars: EnvironmentVariable[] = [];
-    const errors: string[] = [];
+  const parseEnvFile = useCallback(
+    (content: string): { vars: EnvironmentVariable[]; errors: string[] } => {
+      const lines = content.split("\n");
+      const vars: EnvironmentVariable[] = [];
+      const errors: string[] = [];
 
-    lines.forEach((line, index) => {
-      const trimmedLine = line.trim();
+      lines.forEach((line, index) => {
+        const trimmedLine = line.trim();
 
-      // Skip empty lines and comments
-      if (!trimmedLine || trimmedLine.startsWith('#')) {
-        return;
-      }
+        // Skip empty lines and comments
+        if (!trimmedLine || trimmedLine.startsWith("#")) {
+          return;
+        }
 
-      // Check for valid KEY=VALUE format
-      const equalIndex = trimmedLine.indexOf('=');
-      if (equalIndex === -1) {
-        errors.push(`Line ${index + 1}: Invalid format (missing =)`);
-        return;
-      }
+        // Check for valid KEY=VALUE format
+        const equalIndex = trimmedLine.indexOf("=");
+        if (equalIndex === -1) {
+          errors.push(`Line ${index + 1}: Invalid format (missing =)`);
+          return;
+        }
 
-      const key = trimmedLine.substring(0, equalIndex).trim();
-      const value = trimmedLine.substring(equalIndex + 1).trim();
+        const key = trimmedLine.substring(0, equalIndex).trim();
+        const value = trimmedLine.substring(equalIndex + 1).trim();
 
-      // Validate key format
-      if (!key || !/^[A-Z_][A-Z0-9_]*$/i.test(key)) {
-        errors.push(`Line ${index + 1}: Invalid key format "${key}"`);
-        return;
-      }
+        // Validate key format
+        if (!key || !/^[A-Z_][A-Z0-9_]*$/i.test(key)) {
+          errors.push(`Line ${index + 1}: Invalid key format "${key}"`);
+          return;
+        }
 
-      // Remove quotes from value if present
-      let cleanValue = value;
-      if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
-        cleanValue = value.slice(1, -1);
-      }
+        // Remove quotes from value if present
+        let cleanValue = value;
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
+          cleanValue = value.slice(1, -1);
+        }
 
-      // Check for duplicates in current parsing
-      if (vars.some(v => v.key === key)) {
-        errors.push(`Line ${index + 1}: Duplicate key "${key}"`);
-        return;
-      }
+        // Check for duplicates in current parsing
+        if (vars.some((v) => v.key === key)) {
+          errors.push(`Line ${index + 1}: Duplicate key "${key}"`);
+          return;
+        }
 
-      // Check for existing keys in current env vars
-      if (envVars.some(v => v.key === key)) {
-        errors.push(`Line ${index + 1}: Key "${key}" already exists`);
-        return;
-      }
+        // Check for existing keys in current env vars
+        if (envVars.some((v) => v.key === key)) {
+          errors.push(`Line ${index + 1}: Key "${key}" already exists`);
+          return;
+        }
 
-      vars.push({
-        key,
-        value: cleanValue,
-        sensitive: false
+        vars.push({
+          key,
+          value: cleanValue,
+          sensitive: false,
+        });
       });
-    });
 
-    return { vars, errors };
-  }, [envVars]);
+      return { vars, errors };
+    },
+    [envVars]
+  );
 
   // Form validation
   const validateForm = useCallback((): boolean => {
@@ -248,7 +260,10 @@ export const ProjectEnvironments = ({
       errors.key = "Key is required";
     } else if (!/^[A-Z_][A-Z0-9_]*$/i.test(formData.key)) {
       errors.key = "Key must contain only letters, numbers, and underscores";
-    } else if (!editingEnvVar && envVars.some(envVar => envVar.key === formData.key)) {
+    } else if (
+      !editingEnvVar &&
+      envVars.some((envVar) => envVar.key === formData.key)
+    ) {
       errors.key = "Key already exists";
     }
 
@@ -272,13 +287,18 @@ export const ProjectEnvironments = ({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["envVars", projectNameId, selectedEnv] });
+      queryClient.invalidateQueries({
+        queryKey: ["envVars", projectNameId, selectedEnv],
+      });
       toast.success("Environment variable added successfully");
       resetForm();
       setShowAddEnvVarDialog(false);
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.message || error.message || "Failed to add environment variable";
+      const message =
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to add environment variable";
       toast.error(message);
     },
   });
@@ -290,18 +310,23 @@ export const ProjectEnvironments = ({
       return api.environmentVariables.updateEnv(key, {
         app_id: projectNameId,
         env_type_id: selectedEnv,
-        value
+        value,
       });
     },
     onSuccess: (_, { key }) => {
-      queryClient.invalidateQueries({ queryKey: ["envVars", projectNameId, selectedEnv] });
+      queryClient.invalidateQueries({
+        queryKey: ["envVars", projectNameId, selectedEnv],
+      });
       toast.success("Environment variable updated successfully");
       resetForm();
       setShowEditEnvVarDialog(false);
       setActionLoading(key, false);
     },
     onError: (error: any, { key }) => {
-      const message = error?.response?.data?.message || error.message || "Failed to update environment variable";
+      const message =
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to update environment variable";
       toast.error(message);
       setActionLoading(key, false);
     },
@@ -318,14 +343,19 @@ export const ProjectEnvironments = ({
       });
     },
     onSuccess: (_, key) => {
-      queryClient.invalidateQueries({ queryKey: ["envVars", projectNameId, selectedEnv] });
+      queryClient.invalidateQueries({
+        queryKey: ["envVars", projectNameId, selectedEnv],
+      });
       toast.success("Environment variable deleted successfully");
       setShowDeleteEnvVarDialog(false);
       setEditingEnvVar(null);
       setActionLoading(key, false);
     },
     onError: (error: any, key) => {
-      const message = error?.response?.data?.message || error.message || "Failed to delete environment variable";
+      const message =
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to delete environment variable";
       toast.error(message);
       setActionLoading(key, false);
     },
@@ -338,13 +368,16 @@ export const ProjectEnvironments = ({
     setFormErrors({});
   }, []);
 
-  const handleFormChange = useCallback((field: keyof EnvVarFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear field error when user starts typing
-    if (formErrors[field as keyof FormErrors]) {
-      setFormErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [formErrors]);
+  const handleFormChange = useCallback(
+    (field: keyof EnvVarFormData, value: string | boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      // Clear field error when user starts typing
+      if (formErrors[field as keyof FormErrors]) {
+        setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [formErrors]
+  );
 
   // Event handlers
   const handleAddEnvVar = useCallback(() => {
@@ -388,24 +421,27 @@ export const ProjectEnvironments = ({
   }, []);
 
   // Add these handlers after existing handlers
-  const handleBulkImportTextChange = useCallback((text: string) => {
-    setBulkEnvText(text);
+  const handleBulkImportTextChange = useCallback(
+    (text: string) => {
+      setBulkEnvText(text);
 
-    if (text.trim()) {
-      const { vars, errors } = parseEnvFile(text);
-      setParsedEnvVars(vars);
-      setBulkImportErrors(errors);
-    } else {
-      setParsedEnvVars([]);
-      setBulkImportErrors([]);
-    }
-  }, [parseEnvFile]);
+      if (text.trim()) {
+        const { vars, errors } = parseEnvFile(text);
+        setParsedEnvVars(vars);
+        setBulkImportErrors(errors);
+      } else {
+        setParsedEnvVars([]);
+        setBulkImportErrors([]);
+      }
+    },
+    [parseEnvFile]
+  );
 
   const handleBulkImport = useCallback(async () => {
     if (parsedEnvVars.length === 0) return;
 
     const results = await Promise.allSettled(
-      parsedEnvVars.map(envVar =>
+      parsedEnvVars.map((envVar) =>
         api.environmentVariables.createEnv({
           app_id: projectNameId,
           env_type_id: selectedEnv,
@@ -415,12 +451,16 @@ export const ProjectEnvironments = ({
       )
     );
 
-    const successful = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const successful = results.filter((r) => r.status === "fulfilled").length;
+    const failed = results.filter((r) => r.status === "rejected").length;
 
     if (successful > 0) {
-      toast.success(`Successfully imported ${successful} environment variables`);
-      queryClient.invalidateQueries({ queryKey: ["envVars", projectNameId, selectedEnv] });
+      toast.success(
+        `Successfully imported ${successful} environment variables`
+      );
+      queryClient.invalidateQueries({
+        queryKey: ["envVars", projectNameId, selectedEnv],
+      });
     }
 
     if (failed > 0) {
@@ -440,9 +480,8 @@ export const ProjectEnvironments = ({
     setBulkImportErrors([]);
   }, []);
 
-
   const toggleValueVisibility = useCallback((key: string) => {
-    setShowValues(prev => ({ ...prev, [key]: !prev[key] }));
+    setShowValues((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
   const maskValue = useCallback((value: string) => {
@@ -466,35 +505,31 @@ export const ProjectEnvironments = ({
 
   // Memoized computed values
   const filteredVars = useMemo(() => {
-    return envVars.filter(envVar =>
+    return envVars.filter((envVar) =>
       envVar.key.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [envVars, searchQuery]);
 
   const filteredEnvironments = useMemo(() => {
     if (!projectData?.environments) return [];
-    return projectData.environments.filter(env =>
+    return projectData.environments.filter((env) =>
       env.name.toLowerCase().includes(searchEnv.toLowerCase())
     );
   }, [projectData?.environments, searchEnv]);
 
   const selectedEnvironment = useMemo(() => {
-    return projectData?.environments.find(env => env.id === selectedEnv);
+    return projectData?.environments.find((env) => env.id === selectedEnv);
   }, [projectData?.environments, selectedEnv]);
 
-  if(!user) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center text-gray-400">
-          Loading user data...
-        </div>
+        <div className="text-center text-gray-400">Loading user data...</div>
       </div>
     );
   }
 
-  const {
-    can_edit
-  } = user.role;
+  const { can_edit } = user.role;
 
   // Loading states
   if (isProjectLoading) {
@@ -515,9 +550,13 @@ export const ProjectEnvironments = ({
         <div className="flex flex-col items-center space-y-4">
           <AlertTriangle className="w-12 h-12 text-red-400" />
           <div className="text-red-400 text-center">
-            <h3 className="text-lg font-semibold mb-2">Failed to load project</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Failed to load project
+            </h3>
             <p className="text-sm text-gray-400 mb-4">
-              {projectError instanceof Error ? projectError.message : "Unknown error occurred"}
+              {projectError instanceof Error
+                ? projectError.message
+                : "Unknown error occurred"}
             </p>
             <Button
               onClick={() => window.location.reload()}
@@ -537,8 +576,12 @@ export const ProjectEnvironments = ({
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">No Project Data</h3>
-          <p className="text-gray-400 mb-4">Unable to load project information</p>
+          <h3 className="text-lg font-medium text-white mb-2">
+            No Project Data
+          </h3>
+          <p className="text-gray-400 mb-4">
+            Unable to load project information
+          </p>
           <Button
             onClick={onBack}
             variant="outline"
@@ -573,7 +616,7 @@ export const ProjectEnvironments = ({
             <p className="text-gray-400">Environment Variables</p>
           </div>
         </div>
-        { can_edit && (
+        {can_edit && (
           <div className="flex items-center space-x-3">
             <Button
               onClick={() => setShowBulkImportDialog(true)}
@@ -594,7 +637,6 @@ export const ProjectEnvironments = ({
             </Button>
           </div>
         )}
-
       </div>
 
       {/* Environment Selection and Search */}
@@ -612,9 +654,15 @@ export const ProjectEnvironments = ({
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
                   {filteredEnvironments.map((env) => (
-                    <SelectItem key={env.id} value={env.id} className="text-white">
+                    <SelectItem
+                      key={env.id}
+                      value={env.id}
+                      className="text-white"
+                    >
                       <div className="flex items-center space-x-2">
-                        <span className={`w-3 h-3 rounded-full bg-[${env.color.toLocaleUpperCase()}]`} />
+                        <span
+                          className={`w-3 h-3 rounded-full bg-[${env.color.toLocaleUpperCase()}]`}
+                        />
                         <span>{env.name}</span>
                       </div>
                     </SelectItem>
@@ -656,7 +704,9 @@ export const ProjectEnvironments = ({
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center">
               {selectedEnvironment && (
-                <div className={`w-3 h-3 rounded-full ${selectedEnvironment.color} mr-2`} />
+                <div
+                  className={`w-3 h-3 rounded-full ${selectedEnvironment.color} mr-2`}
+                />
               )}
               {selectedEnvironment?.name || "Select Environment"} Variables
               {filteredVars.length > 0 && (
@@ -673,7 +723,11 @@ export const ProjectEnvironments = ({
                 className="text-gray-400 border-gray-600 hover:bg-gray-700"
                 disabled={isEnvVarsLoading}
               >
-                <RefreshCw className={`w-4 h-4 ${isEnvVarsLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 ${
+                    isEnvVarsLoading ? "animate-spin" : ""
+                  }`}
+                />
               </Button>
             )}
           </div>
@@ -694,7 +748,9 @@ export const ProjectEnvironments = ({
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
                 <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                <p className="text-red-400 mb-2">Failed to load environment variables</p>
+                <p className="text-red-400 mb-2">
+                  Failed to load environment variables
+                </p>
                 <Button
                   onClick={() => refetchEnvVars()}
                   variant="outline"
@@ -715,17 +771,18 @@ export const ProjectEnvironments = ({
                 <Database className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-white mb-2">
-                {searchQuery ? "No variables found" : "No environment variables"}
+                {searchQuery
+                  ? "No variables found"
+                  : "No environment variables"}
               </h3>
               <p className="text-gray-400 mb-4">
                 {searchQuery
                   ? `No variables match "${searchQuery}"`
                   : selectedEnv
-                    ? can_edit 
-                      ? "Add your first environment variable to get started"
-                      : "No environment variables configured for this environment"
-                    : "Select an environment to view variables"
-                }
+                  ? can_edit
+                    ? "Add your first environment variable to get started"
+                    : "No environment variables configured for this environment"
+                  : "Select an environment to view variables"}
               </p>
               {selectedEnv && !searchQuery && can_edit && (
                 <Button
@@ -739,16 +796,21 @@ export const ProjectEnvironments = ({
             </div>
           )}
 
-
           {/* Variables Table */}
           {!isEnvVarsLoading && !envVarsError && filteredVars.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-700">
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Key</th>
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Value</th>
-                    <th className="text-right py-3 px-4 text-gray-400 font-medium">Actions</th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-medium">
+                      Key
+                    </th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-medium">
+                      Value
+                    </th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-medium">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -772,7 +834,9 @@ export const ProjectEnvironments = ({
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-2">
                           <code className="text-sm font-mono text-gray-300 bg-gray-900 px-2 py-1 rounded max-w-xs truncate">
-                            {showValues[envVar.key] ? envVar.value : maskValue(envVar.value)}
+                            {showValues[envVar.key]
+                              ? envVar.value
+                              : maskValue(envVar.value)}
                           </code>
                           <Button
                             onClick={() => toggleValueVisibility(envVar.key)}
@@ -791,7 +855,9 @@ export const ProjectEnvironments = ({
                       <td className="py-4 px-4 text-right">
                         <div className="flex items-center justify-end space-x-2">
                           <Button
-                            onClick={() => handleCopyValue(envVar.value, envVar.key)}
+                            onClick={() =>
+                              handleCopyValue(envVar.value, envVar.key)
+                            }
                             variant="ghost"
                             size="sm"
                             className="text-gray-400 hover:text-white p-2"
@@ -845,7 +911,9 @@ export const ProjectEnvironments = ({
       <Dialog open={showAddEnvVarDialog} onOpenChange={setShowAddEnvVarDialog}>
         <DialogContent className="bg-gray-800 border-gray-700 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white">Add Environment Variable</DialogTitle>
+            <DialogTitle className="text-white">
+              Add Environment Variable
+            </DialogTitle>
             <DialogDescription className="text-gray-400">
               Add a new environment variable to {selectedEnvironment?.name}
             </DialogDescription>
@@ -856,9 +924,12 @@ export const ProjectEnvironments = ({
               <Input
                 placeholder="VARIABLE_NAME"
                 value={formData.key}
-                onChange={(e) => handleFormChange('key', e.target.value.toUpperCase())}
-                className={`bg-gray-900 border-gray-700 text-white ${formErrors.key ? 'border-red-500' : ''
-                  }`}
+                onChange={(e) =>
+                  handleFormChange("key", e.target.value.toUpperCase())
+                }
+                className={`bg-gray-900 border-gray-700 text-white ${
+                  formErrors.key ? "border-red-500" : ""
+                }`}
               />
               {formErrors.key && (
                 <p className="text-red-400 text-sm">{formErrors.key}</p>
@@ -869,9 +940,10 @@ export const ProjectEnvironments = ({
               <Input
                 placeholder="Enter value"
                 value={formData.value}
-                onChange={(e) => handleFormChange('value', e.target.value)}
-                className={`bg-gray-900 border-gray-700 text-white ${formErrors.value ? 'border-red-500' : ''
-                  }`}
+                onChange={(e) => handleFormChange("value", e.target.value)}
+                className={`bg-gray-900 border-gray-700 text-white ${
+                  formErrors.value ? "border-red-500" : ""
+                }`}
               />
               {formErrors.value && (
                 <p className="text-red-400 text-sm">{formErrors.value}</p>
@@ -882,7 +954,9 @@ export const ProjectEnvironments = ({
                 type="checkbox"
                 id="sensitive"
                 checked={formData.sensitive}
-                onChange={(e) => handleFormChange('sensitive', e.target.checked)}
+                onChange={(e) =>
+                  handleFormChange("sensitive", e.target.checked)
+                }
                 className="rounded border-gray-700 bg-gray-900"
               />
               <label htmlFor="sensitive" className="text-sm text-white">
@@ -918,12 +992,18 @@ export const ProjectEnvironments = ({
       </Dialog>
 
       {/* Edit Environment Variable Dialog */}
-      <Dialog open={showEditEnvVarDialog} onOpenChange={setShowEditEnvVarDialog}>
+      <Dialog
+        open={showEditEnvVarDialog}
+        onOpenChange={setShowEditEnvVarDialog}
+      >
         <DialogContent className="bg-gray-800 border-gray-700 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white">Edit Environment Variable</DialogTitle>
+            <DialogTitle className="text-white">
+              Edit Environment Variable
+            </DialogTitle>
             <DialogDescription className="text-gray-400">
-              Update the value for {editingEnvVar?.key} in {selectedEnvironment?.name}
+              Update the value for {editingEnvVar?.key} in{" "}
+              {selectedEnvironment?.name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -940,9 +1020,10 @@ export const ProjectEnvironments = ({
               <Input
                 placeholder="Enter value"
                 value={formData.value}
-                onChange={(e) => handleFormChange('value', e.target.value)}
-                className={`bg-gray-900 border-gray-700 text-white ${formErrors.value ? 'border-red-500' : ''
-                  }`}
+                onChange={(e) => handleFormChange("value", e.target.value)}
+                className={`bg-gray-900 border-gray-700 text-white ${
+                  formErrors.value ? "border-red-500" : ""
+                }`}
               />
               {formErrors.value && (
                 <p className="text-red-400 text-sm">{formErrors.value}</p>
@@ -953,7 +1034,9 @@ export const ProjectEnvironments = ({
                 type="checkbox"
                 id="sensitive-edit"
                 checked={formData.sensitive}
-                onChange={(e) => handleFormChange('sensitive', e.target.checked)}
+                onChange={(e) =>
+                  handleFormChange("sensitive", e.target.checked)
+                }
                 className="rounded border-gray-700 bg-gray-900"
               />
               <label htmlFor="sensitive-edit" className="text-sm text-white">
@@ -989,13 +1072,18 @@ export const ProjectEnvironments = ({
       </Dialog>
 
       {/* Delete Environment Variable Dialog */}
-      <Dialog open={showDeleteEnvVarDialog} onOpenChange={setShowDeleteEnvVarDialog}>
+      <Dialog
+        open={showDeleteEnvVarDialog}
+        onOpenChange={setShowDeleteEnvVarDialog}
+      >
         <DialogContent className="bg-gray-800 border-gray-700 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white">Delete Environment Variable</DialogTitle>
+            <DialogTitle className="text-white">
+              Delete Environment Variable
+            </DialogTitle>
             <DialogDescription className="text-gray-400">
-              Are you sure you want to delete the environment variable "{editingEnvVar?.key}"?
-              This action cannot be undone.
+              Are you sure you want to delete the environment variable "
+              {editingEnvVar?.key}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mt-4">
@@ -1004,8 +1092,9 @@ export const ProjectEnvironments = ({
               <div>
                 <h4 className="text-red-400 font-medium text-sm">Warning</h4>
                 <p className="text-red-300 text-sm mt-1">
-                  This will permanently remove the environment variable from {selectedEnvironment?.name}.
-                  Any applications depending on this variable may stop working.
+                  This will permanently remove the environment variable from{" "}
+                  {selectedEnvironment?.name}. Any applications depending on
+                  this variable may stop working.
                 </p>
               </div>
             </div>
@@ -1042,12 +1131,18 @@ export const ProjectEnvironments = ({
       </Dialog>
 
       {/* Bulk Import Dialog */}
-      <Dialog open={showBulkImportDialog} onOpenChange={setShowBulkImportDialog}>
+      <Dialog
+        open={showBulkImportDialog}
+        onOpenChange={setShowBulkImportDialog}
+      >
         <DialogContent className="bg-gray-800 border-gray-700 max-w-2xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="text-white">Import Environment Variables</DialogTitle>
+            <DialogTitle className="text-white">
+              Import Environment Variables
+            </DialogTitle>
             <DialogDescription className="text-gray-400">
-              Paste your .env file content below. Each line should be in KEY=VALUE format.
+              Paste your .env file content below. Each line should be in
+              KEY=VALUE format.
             </DialogDescription>
           </DialogHeader>
 
@@ -1079,7 +1174,10 @@ PORT=3000`}
                     </h4>
                     <div className="space-y-1 max-h-24 overflow-y-auto">
                       {bulkImportErrors.map((error, index) => (
-                        <p key={index} className="text-red-300 text-xs font-mono">
+                        <p
+                          key={index}
+                          className="text-red-300 text-xs font-mono"
+                        >
                           {error}
                         </p>
                       ))}
@@ -1095,10 +1193,17 @@ PORT=3000`}
                     </h4>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {parsedEnvVars.map((envVar, index) => (
-                        <div key={index} className="flex items-center justify-between text-xs">
-                          <span className="text-green-300 font-mono">{envVar.key}</span>
+                        <div
+                          key={index}
+                          className="flex items-center justify-between text-xs"
+                        >
+                          <span className="text-green-300 font-mono">
+                            {envVar.key}
+                          </span>
                           <span className="text-gray-400 font-mono truncate max-w-48">
-                            {envVar.value.length > 30 ? `${envVar.value.substring(0, 30)}...` : envVar.value}
+                            {envVar.value.length > 30
+                              ? `${envVar.value.substring(0, 30)}...`
+                              : envVar.value}
                           </span>
                         </div>
                       ))}
@@ -1120,14 +1225,15 @@ PORT=3000`}
             <Button
               onClick={handleBulkImport}
               className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
-              disabled={parsedEnvVars.length === 0 || bulkImportErrors.length > 0}
+              disabled={
+                parsedEnvVars.length === 0 || bulkImportErrors.length > 0
+              }
             >
               Import {parsedEnvVars.length} Variables
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };

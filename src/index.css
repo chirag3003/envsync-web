@@ -116,3 +116,10 @@ body,
   background: #475569;
   border-radius: 4px;
 }
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}

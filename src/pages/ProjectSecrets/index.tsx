@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { ProjectEnvironmentsHeader } from "@/components/env-vars/ProjectEnvironmentsHeader";
@@ -14,9 +14,12 @@ import {
   EnvironmentVariable,
   EnvVarFormData,
   BulkEnvVarData,
+  EnvironmentType,
 } from "@/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useParams } from "react-router-dom";
+import { parseAsString, useQueryState } from "nuqs";
+import { getDefaultEnvironmentType } from "@/lib/utils";
 
 export const ProjectEnvironments = () => {
   const navigate = useNavigate();
@@ -43,6 +46,17 @@ export const ProjectEnvironments = () => {
     refetch,
   } = useProjectEnvironments(projectNameId);
 
+  const [selectedEnvironment, setSelectedEnvironment] = useQueryState(
+    "selected",
+    parseAsString.withDefault(getDefaultEnvironmentType(environmentTypes))
+  );
+
+  useEffect(() => {
+    if (!selectedEnvironment && environmentTypes.length > 0) {
+      setSelectedEnvironment(getDefaultEnvironmentType(environmentTypes));
+    }
+  }, [environmentTypes]);
+
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -63,9 +77,7 @@ export const ProjectEnvironments = () => {
     [createSecret]
   );
 
-  const handleEditVariable = (
-    data: Partial<EnvVarFormData>
-  ) => {
+  const handleEditVariable = (data: Partial<EnvVarFormData>) => {
     console.log(data);
     updateSecret.mutate(
       { data },
@@ -174,6 +186,7 @@ export const ProjectEnvironments = () => {
       {/* Header */}
       <ProjectEnvironmentsHeader
         environmentTypes={environmentTypes.length}
+        environmentId={selectedEnvironment}
         isRefetching={
           createSecret.isPending ||
           updateSecret.isPending ||
@@ -196,6 +209,8 @@ export const ProjectEnvironments = () => {
 
       {/* Environment Variables Table */}
       <EnvironmentVariablesTable
+        selectedEnvironment={selectedEnvironment}
+        setSelectedEnvironment={setSelectedEnvironment}
         variables={secrets}
         environmentTypes={environmentTypes}
         onEdit={handleEditClick}

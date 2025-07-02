@@ -18,10 +18,12 @@ import {
   ChevronDown,
   Shield,
   MoreVertical,
+  DatabaseBackup,
 } from "lucide-react";
 
 interface ProjectEnvironmentsHeaderProps {
   projectName: string;
+  environmentId: string;
   totalVariables: number;
   totalSecrets: number;
   environmentTypes: number;
@@ -37,6 +39,7 @@ interface ProjectEnvironmentsHeaderProps {
 
 export const ProjectEnvironmentsHeader = ({
   projectName,
+  environmentId,
   totalVariables,
   totalSecrets,
   environmentTypes,
@@ -64,6 +67,14 @@ export const ProjectEnvironmentsHeader = ({
     const targetPath = section === "secrets" ? `${basePath}/secrets` : basePath;
 
     navigate(targetPath);
+  };
+
+  const onRollback = () => {
+    let targetUrl = `/applications/pit/${projectNameId}`;
+    if (currentSection === "Secrets") targetUrl += "/secrets";
+    targetUrl += `?env=${environmentId}`;
+
+    navigate(targetUrl);
   };
 
   return (
@@ -237,6 +248,13 @@ export const ProjectEnvironmentsHeader = ({
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onRollback}
+                className="text-white hover:bg-slate-700 cursor-pointer"
+              >
+                <DatabaseBackup className="w-4 h-4 mr-2" />
+                Rollback
               </DropdownMenuItem>
               {canEdit && (
                 <DropdownMenuItem

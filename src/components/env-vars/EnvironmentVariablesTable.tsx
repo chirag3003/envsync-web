@@ -34,10 +34,13 @@ import {
 import { EnvironmentVariable, EnvironmentType } from "@/constants";
 import { useCopy } from "@/hooks/useClipboard";
 import { parseAsString, useQueryState } from "nuqs";
+import { getDefaultEnvironmentType } from "@/lib/utils";
 
 interface EnvironmentVariablesTableProps {
   variables: EnvironmentVariable[];
   environmentTypes: EnvironmentType[];
+  selectedEnvironment: string;
+  setSelectedEnvironment: (envTypeId: string) => void;
   canEdit: boolean;
   onEdit: (variable: EnvironmentVariable) => void;
   onDelete: (variable: EnvironmentVariable) => void;
@@ -47,6 +50,8 @@ interface EnvironmentVariablesTableProps {
 export const EnvironmentVariablesTable = ({
   variables,
   environmentTypes,
+  selectedEnvironment,
+  setSelectedEnvironment,
   canEdit,
   onEdit,
   onDelete,
@@ -54,10 +59,6 @@ export const EnvironmentVariablesTable = ({
 }: EnvironmentVariablesTableProps) => {
   const copy = useCopy();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedEnvironment, setSelectedEnvironment] = useQueryState(
-    "selected",
-    parseAsString.withDefault("all")
-  );
   const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>(
     {}
   );
@@ -127,7 +128,9 @@ export const EnvironmentVariablesTable = ({
     );
   };
 
-  const hasActiveFilters = searchQuery !== "" || selectedEnvironment !== "all";
+  const hasActiveFilters =
+    searchQuery !== "" ||
+    selectedEnvironment !== getDefaultEnvironmentType(environmentTypes);
 
   return (
     <Card className="bg-slate-800 border-slate-700">
@@ -174,9 +177,6 @@ export const EnvironmentVariablesTable = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="all" className="text-white">
-                  All Environments
-                </SelectItem>
                 {environmentTypes.map((envType) => (
                   <SelectItem
                     key={envType.id}
@@ -209,7 +209,8 @@ export const EnvironmentVariablesTable = ({
                 Search: "{searchQuery}"
               </Badge>
             )}
-            {selectedEnvironment !== "all" && (
+            {selectedEnvironment !==
+              getDefaultEnvironmentType(environmentTypes) && (
               <Badge
                 variant="secondary"
                 className="bg-slate-700 text-slate-300"
@@ -221,7 +222,9 @@ export const EnvironmentVariablesTable = ({
             <Button
               onClick={() => {
                 setSearchQuery("");
-                setSelectedEnvironment("all");
+                setSelectedEnvironment(
+                  getDefaultEnvironmentType(environmentTypes)
+                );
               }}
               variant="ghost"
               size="sm"
@@ -251,7 +254,9 @@ export const EnvironmentVariablesTable = ({
               <Button
                 onClick={() => {
                   setSearchQuery("");
-                  setSelectedEnvironment("all");
+                  setSelectedEnvironment(
+                    getDefaultEnvironmentType(environmentTypes)
+                  );
                 }}
                 variant="outline"
                 className="text-white border-slate-600 hover:bg-slate-700"

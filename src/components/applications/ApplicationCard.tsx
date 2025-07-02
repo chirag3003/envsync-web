@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { App } from "@/constants";
+import { useNavigate } from "react-router-dom";
 
 interface ApplicationCardProps {
   app: App;
@@ -34,6 +35,7 @@ export const ApplicationCard = ({
   onEdit,
   onDelete,
 }: ApplicationCardProps) => {
+  const navigate = useNavigate();
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
@@ -150,8 +152,8 @@ export const ApplicationCard = ({
             {app.enable_secrets && (
               <div className="flex items-center space-x-1 text-slate-400">
                 <Shield className="w-3 h-3" />
-              <span>{app.secret_count || 0} secrets</span>
-            </div>
+                <span>{app.secret_count || 0} secrets</span>
+              </div>
             )}
           </div>
 
@@ -165,7 +167,7 @@ export const ApplicationCard = ({
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              onView(app);
+              navigate(`/applications/${app.id}`);
             }}
             className="w-full bg-slate-700 hover:bg-slate-600 text-white"
             size="sm"

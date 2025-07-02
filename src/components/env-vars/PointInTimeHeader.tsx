@@ -35,6 +35,7 @@ interface PointInTimeHeaderProps {
     projectName: string;
     environmentName?: string;
     environmentTypes: EnvironmentType[];
+    selectedEnvironmentId?: string;
     canEdit: boolean;
     isRefetching: boolean;
     onBack: () => void;
@@ -50,6 +51,7 @@ export const PointInTimeHeader = ({
     projectName,
     environmentName = "",
     environmentTypes = [],
+    selectedEnvironmentId,
     canEdit,
     isRefetching,
     onBack,
@@ -64,12 +66,6 @@ export const PointInTimeHeader = ({
     const { projectNameId } = useParams();
     const location = useLocation();
 
-    const [selectedEnvironment, setSelectedEnvironment] = useState<string>(
-        environmentTypes.find(env => env.name.toLowerCase() === environmentName.toLowerCase())?.id ||
-        environmentTypes.find(env => env.is_default)?.id ||
-        environmentTypes[0]?.id || ""
-    );
-
     // Determine current section based on route
     const isSecretsPage = location.pathname.includes('/secrets');
     const currentSection = isSecretsPage ? 'Secrets' : 'Environments';
@@ -77,18 +73,25 @@ export const PointInTimeHeader = ({
     const handleSectionChange = (section: 'environments' | 'secrets') => {
         if (!projectNameId) return;
 
-        const basePath = `/applications/pit/${projectNameId}/environments`;
-        const targetPath = section === 'secrets' ? `${basePath}/secrets` : basePath;
+        const basePath = `/applications/pit/${projectNameId}`;
+        const targetPath = section === 'secrets' ? `${basePath}/secrets` : `${basePath}/environments`;
 
         navigate(targetPath);
     };
 
     const handleEnvironmentChange = (envId: string) => {
-        setSelectedEnvironment(envId);
         onEnvironmentChange?.(envId);
     };
 
-    const getEnvironmentColor = (color: string) => {
+    const getEnvironmentColor = (color?: string) => {
+        if (!color) return "bg-slate-500";
+        
+        // Handle hex colors
+        if (color.startsWith('#')) {
+            return `bg-[${color}]`;
+        }
+        
+        // Handle named colors
         const colors: { [key: string]: string } = {
             red: "bg-red-500",
             yellow: "bg-yellow-500",
@@ -100,7 +103,10 @@ export const PointInTimeHeader = ({
         return colors[color] || "bg-slate-500";
     };
 
-    const selectedEnvData = environmentTypes.find(env => env.id === selectedEnvironment);
+    const selectedEnvData = environmentTypes.find(env => 
+        env.id === selectedEnvironmentId || 
+        env.name.toLowerCase() === environmentName.toLowerCase()
+    ) || environmentTypes[0];
 
     return (
         <div className="space-y-6">
@@ -200,53 +206,66 @@ export const PointInTimeHeader = ({
                     </div>
 
                     {/* Enhanced Environment Type Selector */}
-                    <Card className="bg-slate-800/30 border-slate-700">
-                        <CardContent className="p-4">
-                            <div className="flex items-center space-x-4">
-                                <span className="text-slate-300 text-sm font-medium min-w-fit">Environment:</span>
-                                <Select value={selectedEnvironment} onValueChange={handleEnvironmentChange}>
-                                    <SelectTrigger className="w-64 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 transition-colors">
-                                        <SelectValue>
-                                            <div className="flex items-center space-x-3">
-                                                <div className={`w-3 h-3 rounded-full ${getEnvironmentColor(selectedEnvData?.color || 'slate')}`} />
-                                                <span className="font-medium">{selectedEnvData?.name}</span>
-                                                {selectedEnvData?.is_protected && (
-                                                    <Shield className="w-3 h-3 text-red-400" />
+                    {environmentTypes.length > 0 && (
+                        <Card className="bg-slate-800/30 border-slate-700">
+                            <CardContent className="p-4">
+                                <div className="flex items-center space-x-4">
+                                    <span className="text-slate-300 text-sm font-medium min-w-fit">Environment:</span>
+                                    <Select 
+                                        value={selectedEnvironmentId || selectedEnvData?.id} 
+                                        onValueChange={handleEnvironmentChange}
+                                    >
+                                        <SelectTrigger className="w-64 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 transition-colors">
+                                            <SelectValue>
+                                                {selectedEnvData && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <div 
+                                                            className="w-3 h-3 rounded-full" 
+                                                            style={{ backgroundColor: selectedEnvData.color || '#6366f1' }}
+                                                        />
+                                                        <span className="font-medium">{selectedEnvData.name}</span>
+                                                        {selectedEnvData.is_protected && (
+                                                            <Shield className="w-3 h-3 text-red-400" />
+                                                        )}
+                                                        {selectedEnvData.is_default && (
+                                                            <Badge className="bg-blue-600 text-blue-100 text-xs px-2 py-0.5">
+                                                                Default
+                                                            </Badge>
+                                                        )}
+                                                    </div>
                                                 )}
-                                                {selectedEnvData?.is_default && (
-                                                    <Badge className="bg-blue-600 text-blue-100 text-xs px-2 py-0.5">
-                                                        Default
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-slate-800 border-slate-700 shadow-xl">
-                                        {environmentTypes.map((env) => (
-                                            <SelectItem 
-                                                key={env.id} 
-                                                value={env.id} 
-                                                className="text-white hover:bg-slate-700 p-3"
-                                            >
-                                                <div className="flex items-center space-x-3">
-                                                    <div className={`w-3 h-3 rounded-full ${getEnvironmentColor(env.color)}`} />
-                                                    <span className="font-medium">{env.name}</span>
-                                                    {env.is_protected && (
-                                                        <Shield className="w-3 h-3 text-red-400" />
-                                                    )}
-                                                    {env.is_default && (
-                                                        <Badge className="bg-blue-600 text-blue-100 text-xs px-2 py-0.5">
-                                                            Default
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-800 border-slate-700 shadow-xl">
+                                            {environmentTypes.map((env) => (
+                                                <SelectItem 
+                                                    key={env.id} 
+                                                    value={env.id} 
+                                                    className="text-white hover:bg-slate-700 p-3"
+                                                >
+                                                    <div className="flex items-center space-x-3">
+                                                        <div 
+                                                            className="w-3 h-3 rounded-full" 
+                                                            style={{ backgroundColor: env.color || '#6366f1' }}
+                                                        />
+                                                        <span className="font-medium">{env.name}</span>
+                                                        {env.is_protected && (
+                                                            <Shield className="w-3 h-3 text-red-400" />
+                                                        )}
+                                                        {env.is_default && (
+                                                            <Badge className="bg-blue-600 text-blue-100 text-xs px-2 py-0.5">
+                                                                Default
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 {/* Enhanced Actions */}

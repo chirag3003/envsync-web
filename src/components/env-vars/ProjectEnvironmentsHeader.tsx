@@ -17,7 +17,7 @@ import {
   Database,
   ChevronDown,
   Shield,
-  MoreVertical
+  MoreVertical,
 } from "lucide-react";
 
 interface ProjectEnvironmentsHeaderProps {
@@ -54,14 +54,14 @@ export const ProjectEnvironmentsHeader = ({
   const location = useLocation();
 
   // Determine current section based on route
-  const isSecretsPage = location.pathname.includes('/secrets');
-  const currentSection = isSecretsPage ? 'Secrets' : 'Environments';
+  const isSecretsPage = location.pathname.includes("/secrets");
+  const currentSection = isSecretsPage ? "Secrets" : "Environments";
 
-  const handleSectionChange = (section: 'environments' | 'secrets') => {
+  const handleSectionChange = (section: "environments" | "secrets") => {
     if (!projectNameId) return;
 
     const basePath = `/applications/${projectNameId}`;
-    const targetPath = section === 'secrets' ? `${basePath}/secrets` : basePath;
+    const targetPath = section === "secrets" ? `${basePath}/secrets` : basePath;
 
     navigate(targetPath);
   };
@@ -105,9 +105,10 @@ export const ProjectEnvironmentsHeader = ({
             align="start"
           >
             <DropdownMenuItem
-              onClick={() => handleSectionChange('environments')}
-              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${!isSecretsPage ? 'bg-slate-700' : ''
-                }`}
+              onClick={() => handleSectionChange("environments")}
+              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${
+                !isSecretsPage ? "bg-slate-700" : ""
+              }`}
             >
               <Settings className="w-4 h-4 mr-3 text-emerald-400" />
               <div className="flex flex-col">
@@ -118,9 +119,10 @@ export const ProjectEnvironmentsHeader = ({
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => handleSectionChange('secrets')}
-              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${isSecretsPage ? 'bg-slate-700' : ''
-                }`}
+              onClick={() => handleSectionChange("secrets")}
+              className={`text-white hover:bg-slate-700 cursor-pointer p-3 ${
+                isSecretsPage ? "bg-slate-700" : ""
+              }`}
             >
               <Shield className="w-4 h-4 mr-3 text-red-400" />
               <div className="flex flex-col">
@@ -146,8 +148,7 @@ export const ProjectEnvironmentsHeader = ({
               <p className="text-slate-400">
                 {isSecretsPage
                   ? "Sensitive Variables & Credentials Management"
-                  : "Environment Variables & Configuration"
-                }
+                  : "Environment Variables & Configuration"}
               </p>
             </div>
           </div>
@@ -156,10 +157,16 @@ export const ProjectEnvironmentsHeader = ({
           <div className="flex items-center space-x-4 mt-3">
             {!isSecretsPage ? (
               <>
-                <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+                <Badge
+                  variant="secondary"
+                  className="bg-slate-700 text-slate-300"
+                >
                   {totalVariables} Variables
                 </Badge>
-                <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+                <Badge
+                  variant="secondary"
+                  className="bg-slate-700 text-slate-300"
+                >
                   {totalSecrets} Secrets
                 </Badge>
                 <Badge
@@ -171,11 +178,17 @@ export const ProjectEnvironmentsHeader = ({
               </>
             ) : (
               <>
-                <Badge variant="secondary" className="bg-red-500/20 text-red-400">
+                <Badge
+                  variant="secondary"
+                  className="bg-red-500/20 text-red-400"
+                >
                   <Shield className="w-3 h-3 mr-1" />
                   {totalSecrets} Secrets
                 </Badge>
-                <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+                <Badge
+                  variant="secondary"
+                  className="bg-slate-700 text-slate-300"
+                >
                   {totalVariables} Total Variables
                 </Badge>
                 <Badge
@@ -212,7 +225,9 @@ export const ProjectEnvironmentsHeader = ({
                 className="text-white hover:bg-slate-700 cursor-pointer"
               >
                 <RefreshCw
-                  className={`w-4 h-4 mr-2 ${isRefetching ? "animate-spin" : ""}`}
+                  className={`w-4 h-4 mr-2 ${
+                    isRefetching ? "animate-spin" : ""
+                  }`}
                 />
                 Refresh
               </DropdownMenuItem>
@@ -236,7 +251,6 @@ export const ProjectEnvironmentsHeader = ({
           </DropdownMenu>
 
           {canEdit && (
-
             <>
               <Button
                 onClick={onBulkImport}
@@ -249,10 +263,11 @@ export const ProjectEnvironmentsHeader = ({
 
               <Button
                 onClick={onAddVariable}
-                className={`text-white ${isSecretsPage
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-emerald-500 hover:bg-emerald-600"
-                  }`}
+                className={`text-white ${
+                  isSecretsPage
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-emerald-500 hover:bg-emerald-600"
+                }`}
               >
                 {isSecretsPage ? (
                   <>

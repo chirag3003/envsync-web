@@ -50,7 +50,7 @@ export const EnvironmentVariablesTable = ({
   canEdit,
   onEdit,
   onDelete,
-  isSecrets
+  isSecrets,
 }: EnvironmentVariablesTableProps) => {
   const copy = useCopy();
   const [searchQuery, setSearchQuery] = useState("");
@@ -134,8 +134,13 @@ export const EnvironmentVariablesTable = ({
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <CardTitle className="text-white flex items-center">
-            <Key className="size-8 mr-2 bg-emerald-500 border border-emerald-700 p-2 stroke-[3] text-white rounded-md" />
-            {isSecrets ? "Secrets" : "Environment Variables"} ({filteredVariables.length})
+            {isSecrets ? (
+              <Shield className="size-8 mr-2 bg-red-500 border border-red-700 p-2 stroke-[3] text-white rounded-md" />
+            ) : (
+              <Key className="size-8 mr-2 bg-emerald-500 border border-emerald-700 p-2 stroke-[3] text-white rounded-md" />
+            )}
+            {isSecrets ? "Secrets" : "Environment Variables"} (
+            {filteredVariables.length})
           </CardTitle>
 
           {/* Filters */}
@@ -269,9 +274,9 @@ export const EnvironmentVariablesTable = ({
                   <th className="text-left py-3 px-4 text-slate-400 font-medium">
                     Environment
                   </th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                  {/* <th className="text-left py-3 px-4 text-slate-400 font-medium">
                     Type
-                  </th>
+                  </th> */}
                   <th className="text-left py-3 px-4 text-slate-400 font-medium">
                     Updated
                   </th>
@@ -308,7 +313,7 @@ export const EnvironmentVariablesTable = ({
                       <div className="flex items-center space-x-2 max-w-xs">
                         {variable.sensitive ? (
                           <div className="flex items-center space-x-2">
-                            <code className="text-sm font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded flex-1 truncate">
+                            <code className="select-none text-sm font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded flex-1 truncate">
                               {showSensitive[variable.id]
                                 ? variable.value
                                 : "••••••••"}
@@ -342,7 +347,7 @@ export const EnvironmentVariablesTable = ({
                           </div>
                         ) : (
                           <div className="flex items-center space-x-2">
-                            <code className="text-sm font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded flex-1 truncate">
+                            <code className="select-all text-sm font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded flex-1 truncate">
                               {variable.value}
                             </code>
                             <Button
@@ -362,7 +367,7 @@ export const EnvironmentVariablesTable = ({
                       {getEnvironmentBadge(variable.env_type_id)}
                     </td>
 
-                    <td className="py-4 px-4">
+                    {/* <td className="py-4 px-4">
                       <Badge
                         variant="secondary"
                         className={`${
@@ -380,7 +385,7 @@ export const EnvironmentVariablesTable = ({
                           {variable.sensitive ? "Secret" : "Variable"}
                         </span>
                       </Badge>
-                    </td>
+                    </td> */}
 
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-1 text-sm text-slate-400">

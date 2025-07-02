@@ -429,7 +429,7 @@ export const AuditLogs = () => {
         case "create":
           return "bg-green-900 text-green-300 border-green-800";
         case "update":
-          return "bg-blue-900 text-blue-300 border-blue-800";
+          return "bg-electric_indigo-900 text-electric_indigo-300 border-electric_indigo-800";
         case "delete":
           return "bg-red-900 text-red-300 border-red-800";
         case "view":
@@ -636,7 +636,7 @@ export const AuditLogs = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 w-full mx-auto">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

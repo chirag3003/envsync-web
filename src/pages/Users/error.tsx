@@ -9,8 +9,10 @@ export const UsersErrorPage = () => {
       <div className="flex flex-col items-center space-y-4">
         <div className="text-red-500 text-xl">⚠️</div>
         <p className="text-gray-400">Failed to load team members</p>
-        <Button 
-          onClick={() => queryClient.invalidateQueries({ queryKey: ["usersData"] })}
+        <Button
+          onClick={() =>
+            queryClient.invalidateQueries({ queryKey: ["usersData"] })
+          }
           className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
         >
           Retry

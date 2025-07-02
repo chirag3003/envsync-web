@@ -82,18 +82,21 @@ export const WebHooks = () => {
   >({});
 
   // Helper function to set loading state for individual actions
-  const setActionLoading = useCallback((webhookId: string, loading: boolean) => {
-    setActionLoadingStates((prev) => ({ ...prev, [webhookId]: loading }));
-  }, []);
+  const setActionLoading = useCallback(
+    (webhookId: string, loading: boolean) => {
+      setActionLoadingStates((prev) => ({ ...prev, [webhookId]: loading }));
+    },
+    []
+  );
 
   // Move ALL hooks to the top level - no conditional hooks
   const { data: webhooks, isLoading, error } = api.webhooks.getWebhooks();
-  
+
   // Always call this hook, but we'll only use the data when needed
   const {
     data: applications,
     isLoading: applicationsLoading,
-    error: applicationsError
+    error: applicationsError,
   } = api.applications.allApplications();
 
   const createWebhook = api.webhooks.createWebhook({
@@ -166,7 +169,8 @@ export const WebHooks = () => {
       name: newWebhookData.name,
       event_types: newWebhookData.event_types,
       url: newWebhookData.url,
-      webhook_type: newWebhookData.webhook_type as CreateWebhookRequest["webhook_type"],
+      webhook_type:
+        newWebhookData.webhook_type as CreateWebhookRequest["webhook_type"],
       app_id: newWebhookData.app_id,
       linked_to: newWebhookData.linked_to as CreateWebhookRequest["linked_to"],
     });
@@ -200,69 +204,87 @@ export const WebHooks = () => {
   );
 
   const handleEventToggle = useCallback((eventType: string) => {
-    setNewWebhookData(prev => ({
+    setNewWebhookData((prev) => ({
       ...prev,
       event_types: prev.event_types.includes(eventType)
-        ? prev.event_types.filter(e => e !== eventType)
-        : [...prev.event_types, eventType]
+        ? prev.event_types.filter((e) => e !== eventType)
+        : [...prev.event_types, eventType],
     }));
   }, []);
 
   // Add these handler functions in your component
-  const handleCategoryToggle = useCallback((categoryName: string) => {
-    const category = WEBHOOK_EVENT_CATEGORIES.find(cat => cat.name === categoryName);
-    if (!category) return;
+  const handleCategoryToggle = useCallback(
+    (categoryName: string) => {
+      const category = WEBHOOK_EVENT_CATEGORIES.find(
+        (cat) => cat.name === categoryName
+      );
+      if (!category) return;
 
-    const categoryEventValues = category.events.map(event => event.value);
-    const allSelected = categoryEventValues.every(eventValue =>
-      newWebhookData.event_types.includes(eventValue)
-    );
+      const categoryEventValues = category.events.map((event) => event.value);
+      const allSelected = categoryEventValues.every((eventValue) =>
+        newWebhookData.event_types.includes(eventValue)
+      );
 
-    if (allSelected) {
-      // Deselect all events in this category
-      setNewWebhookData(prev => ({
-        ...prev,
-        event_types: prev.event_types.filter(eventType =>
-          !categoryEventValues.includes(eventType)
-        )
-      }));
-    } else {
-      // Select all events in this category
-      setNewWebhookData(prev => ({
-        ...prev,
-        event_types: [...new Set([...prev.event_types, ...categoryEventValues])]
-      }));
-    }
-  }, [newWebhookData.event_types]);
+      if (allSelected) {
+        // Deselect all events in this category
+        setNewWebhookData((prev) => ({
+          ...prev,
+          event_types: prev.event_types.filter(
+            (eventType) => !categoryEventValues.includes(eventType)
+          ),
+        }));
+      } else {
+        // Select all events in this category
+        setNewWebhookData((prev) => ({
+          ...prev,
+          event_types: [
+            ...new Set([...prev.event_types, ...categoryEventValues]),
+          ],
+        }));
+      }
+    },
+    [newWebhookData.event_types]
+  );
 
-  const handleSubcategoryToggle = useCallback((categoryName: string, subcategoryName: string) => {
-    const category = WEBHOOK_EVENT_CATEGORIES.find(cat => cat.name === categoryName);
-    if (!category) return;
+  const handleSubcategoryToggle = useCallback(
+    (categoryName: string, subcategoryName: string) => {
+      const category = WEBHOOK_EVENT_CATEGORIES.find(
+        (cat) => cat.name === categoryName
+      );
+      if (!category) return;
 
-    const subcategory = category.subcategories.find(sub => sub.name === subcategoryName);
-    if (!subcategory) return;
+      const subcategory = category.subcategories.find(
+        (sub) => sub.name === subcategoryName
+      );
+      if (!subcategory) return;
 
-    const subcategoryEventValues = subcategory.events.map(event => event.value);
-    const allSelected = subcategoryEventValues.every(eventValue =>
-      newWebhookData.event_types.includes(eventValue)
-    );
+      const subcategoryEventValues = subcategory.events.map(
+        (event) => event.value
+      );
+      const allSelected = subcategoryEventValues.every((eventValue) =>
+        newWebhookData.event_types.includes(eventValue)
+      );
 
-    if (allSelected) {
-      // Deselect all events in this subcategory
-      setNewWebhookData(prev => ({
-        ...prev,
-        event_types: prev.event_types.filter(eventType =>
-          !subcategoryEventValues.includes(eventType)
-        )
-      }));
-    } else {
-      // Select all events in this subcategory
-      setNewWebhookData(prev => ({
-        ...prev,
-        event_types: [...new Set([...prev.event_types, ...subcategoryEventValues])]
-      }));
-    }
-  }, [newWebhookData.event_types]);
+      if (allSelected) {
+        // Deselect all events in this subcategory
+        setNewWebhookData((prev) => ({
+          ...prev,
+          event_types: prev.event_types.filter(
+            (eventType) => !subcategoryEventValues.includes(eventType)
+          ),
+        }));
+      } else {
+        // Select all events in this subcategory
+        setNewWebhookData((prev) => ({
+          ...prev,
+          event_types: [
+            ...new Set([...prev.event_types, ...subcategoryEventValues]),
+          ],
+        }));
+      }
+    },
+    [newWebhookData.event_types]
+  );
 
   if (isLoading) {
     return <WebHooksLoadingPage />;
@@ -276,7 +298,8 @@ export const WebHooks = () => {
         <div>
           <h1 className="text-3xl font-bold text-white">Webhooks</h1>
           <p className="text-gray-400 mt-2">
-            Manage webhooks to receive real-time notifications about events in your EnvSync projects
+            Manage webhooks to receive real-time notifications about events in
+            your EnvSync projects
           </p>
         </div>
 
@@ -297,7 +320,8 @@ export const WebHooks = () => {
                 Create New Webhook
               </DialogTitle>
               <DialogDescription className="text-gray-400">
-                Create a new webhook to receive notifications about events in your projects.
+                Create a new webhook to receive notifications about events in
+                your projects.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -310,7 +334,12 @@ export const WebHooks = () => {
                     id="name"
                     placeholder="My Webhook"
                     value={newWebhookData.name}
-                    onChange={(e) => setNewWebhookData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setNewWebhookData((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
                     className="bg-gray-900 border-gray-700 text-white"
                     disabled={createWebhook.isPending}
                   />
@@ -324,7 +353,12 @@ export const WebHooks = () => {
                     type="url"
                     placeholder="https://hook.url/webhook"
                     value={newWebhookData.url}
-                    onChange={(e) => setNewWebhookData(prev => ({ ...prev, url: e.target.value }))}
+                    onChange={(e) =>
+                      setNewWebhookData((prev) => ({
+                        ...prev,
+                        url: e.target.value,
+                      }))
+                    }
                     className="bg-gray-900 border-gray-700 text-white"
                     disabled={createWebhook.isPending}
                   />
@@ -339,7 +373,10 @@ export const WebHooks = () => {
                   <Select
                     value={newWebhookData.webhook_type}
                     onValueChange={(value: "SLACK" | "DISCORD" | "CUSTOM") =>
-                      setNewWebhookData(prev => ({ ...prev, webhook_type: value }))
+                      setNewWebhookData((prev) => ({
+                        ...prev,
+                        webhook_type: value,
+                      }))
                     }
                     disabled={createWebhook.isPending}
                   >
@@ -348,7 +385,11 @@ export const WebHooks = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
                       {WEBHOOK_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value} className="text-white">
+                        <SelectItem
+                          key={type.value}
+                          value={type.value}
+                          className="text-white"
+                        >
                           {type.label}
                         </SelectItem>
                       ))}
@@ -362,7 +403,11 @@ export const WebHooks = () => {
                   <Select
                     value={newWebhookData.linked_to}
                     onValueChange={(value: "org" | "app") =>
-                      setNewWebhookData(prev => ({ ...prev, linked_to: value, app_id: value === "org" ? null : prev.app_id }))
+                      setNewWebhookData((prev) => ({
+                        ...prev,
+                        linked_to: value,
+                        app_id: value === "org" ? null : prev.app_id,
+                      }))
                     }
                     disabled={createWebhook.isPending}
                   >
@@ -371,7 +416,11 @@ export const WebHooks = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
                       {LINKED_TO_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="text-white">
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                          className="text-white"
+                        >
                           {option.label}
                         </SelectItem>
                       ))}
@@ -388,7 +437,10 @@ export const WebHooks = () => {
                   <Select
                     value={newWebhookData.app_id || ""}
                     onValueChange={(value) =>
-                      setNewWebhookData(prev => ({ ...prev, app_id: value || null }))
+                      setNewWebhookData((prev) => ({
+                        ...prev,
+                        app_id: value || null,
+                      }))
                     }
                     disabled={createWebhook.isPending || applicationsLoading}
                   >
@@ -405,10 +457,16 @@ export const WebHooks = () => {
                         </SelectItem>
                       ) : applications && applications.length > 0 ? (
                         applications.map((app) => (
-                          <SelectItem key={app.id} value={app.id} className="text-white">
+                          <SelectItem
+                            key={app.id}
+                            value={app.id}
+                            className="text-white"
+                          >
                             <div className="flex flex-col py-1">
                               <span className="font-medium">{app.name}</span>
-                              <span className="text-xs text-gray-400">ID: {app.id}</span>
+                              <span className="text-xs text-gray-400">
+                                ID: {app.id}
+                              </span>
                             </div>
                           </SelectItem>
                         ))
@@ -430,18 +488,26 @@ export const WebHooks = () => {
               <div className="space-y-4">
                 <Label className="text-white">Event Types *</Label>
                 <div className="grid grid-cols-2 gap-6 max-h-64 overflow-y-auto p-4 bg-gray-900 rounded-lg">
-
                   {WEBHOOK_EVENT_CATEGORIES.map((category) => (
                     <div key={category.name} className="space-y-3">
-              <div className="ml-6 space-y-2">
+                      <div className="ml-6 space-y-2">
                         {category.subcategories.map((subcategory) => (
                           <div key={subcategory.name} className="space-y-2">
                             <div className="flex items-center space-x-2">
                               <input
                                 type="checkbox"
                                 id={`subcategory-${subcategory.name}`}
-                                checked={subcategory.events.every(event => newWebhookData.event_types.includes(event.value))}
-                                onChange={() => handleSubcategoryToggle(category.name, subcategory.name)}
+                                checked={subcategory.events.every((event) =>
+                                  newWebhookData.event_types.includes(
+                                    event.value
+                                  )
+                                )}
+                                onChange={() =>
+                                  handleSubcategoryToggle(
+                                    category.name,
+                                    subcategory.name
+                                  )
+                                }
                                 className="rounded border-gray-600 bg-gray-800 text-electric_indigo-500 scale-90"
                                 disabled={createWebhook.isPending}
                               />
@@ -455,15 +521,24 @@ export const WebHooks = () => {
 
                             <div className="ml-4 space-y-1">
                               {subcategory.events.map((event) => (
-                                <label key={event.value} className="flex items-center space-x-2 cursor-pointer">
+                                <label
+                                  key={event.value}
+                                  className="flex items-center space-x-2 cursor-pointer"
+                                >
                                   <input
                                     type="checkbox"
-                                    checked={newWebhookData.event_types.includes(event.value)}
-                                    onChange={() => handleEventToggle(event.value)}
+                                    checked={newWebhookData.event_types.includes(
+                                      event.value
+                                    )}
+                                    onChange={() =>
+                                      handleEventToggle(event.value)
+                                    }
                                     className="rounded border-gray-600 bg-gray-800 text-electric_indigo-500 scale-75"
                                     disabled={createWebhook.isPending}
                                   />
-                                  <span className="text-xs text-gray-400">{event.label}</span>
+                                  <span className="text-xs text-gray-400">
+                                    {event.label}
+                                  </span>
                                 </label>
                               ))}
                             </div>
@@ -556,7 +631,10 @@ export const WebHooks = () => {
                           {webhook.app_id && (
                             <>
                               <br />
-                              App: {applications?.find(app => app.id === webhook.app_id)?.name || webhook.app_id}
+                              App:{" "}
+                              {applications?.find(
+                                (app) => app.id === webhook.app_id
+                              )?.name || webhook.app_id}
                             </>
                           )}
                         </span>
@@ -579,7 +657,7 @@ export const WebHooks = () => {
                           size="sm"
                           variant="ghost"
                           className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-                          onClick={() => window.open(webhook.url, '_blank')}
+                          onClick={() => window.open(webhook.url, "_blank")}
                         >
                           <ExternalLink className="h-3 w-3" />
                         </Button>
@@ -588,9 +666,11 @@ export const WebHooks = () => {
                     <td className="py-4 px-4">
                       <Badge
                         variant="secondary"
-                        className="text-xs bg-blue-900/20 text-blue-300 border-blue-800"
+                        className="text-xs bg-electric_indigo-900/20 text-electric_indigo-300 border-electric_indigo-800"
                       >
-                        {WEBHOOK_TYPES.find(t => t.value === webhook.webhook_type)?.label || webhook.webhook_type}
+                        {WEBHOOK_TYPES.find(
+                          (t) => t.value === webhook.webhook_type
+                        )?.label || webhook.webhook_type}
                       </Badge>
                     </td>
                     <td className="py-4 px-4">
@@ -601,7 +681,9 @@ export const WebHooks = () => {
                             variant="secondary"
                             className="text-xs bg-gray-700 text-gray-300"
                           >
-                            {WEBHOOK_EVENTS.find(e => e.value === event)?.label.split(' ')[0] || event}
+                            {WEBHOOK_EVENTS.find(
+                              (e) => e.value === event
+                            )?.label.split(" ")[0] || event}
                           </Badge>
                         ))}
                         {webhook.event_types?.length > 2 && (
@@ -617,10 +699,11 @@ export const WebHooks = () => {
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-2">
                         <Badge
-                          className={`${webhook.is_active
+                          className={`${
+                            webhook.is_active
                               ? "bg-green-900 text-green-300 border-green-800"
                               : "bg-gray-700 text-gray-300 border-gray-600"
-                            } border`}
+                          } border`}
                         >
                           {webhook.is_active ? "Active" : "Inactive"}
                         </Badge>
@@ -706,8 +789,9 @@ export const WebHooks = () => {
                 No Webhooks
               </h3>
               <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Create your first webhook to receive real-time notifications about events in your EnvSync projects.
-                Webhooks allow you to integrate with external services and automate your workflows.
+                Create your first webhook to receive real-time notifications
+                about events in your EnvSync projects. Webhooks allow you to
+                integrate with external services and automate your workflows.
               </p>
               <Button
                 onClick={() => setIsCreateModalOpen(true)}
@@ -732,9 +816,11 @@ export const WebHooks = () => {
                   <ShieldCheck className="h-6 w-6 text-green-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-400">Active Webhooks</p>
+                  <p className="text-sm font-medium text-gray-400">
+                    Active Webhooks
+                  </p>
                   <p className="text-2xl font-bold text-white">
-                    {webhooks.filter(w => w.is_active).length}
+                    {webhooks.filter((w) => w.is_active).length}
                   </p>
                 </div>
               </div>

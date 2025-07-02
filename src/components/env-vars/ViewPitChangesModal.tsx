@@ -67,13 +67,13 @@ export const ViewPitChangesModal = ({
   const getOperationIcon = (operation: string) => {
     switch (operation) {
       case "CREATE":
-        return <Plus className="w-4 h-4 text-green-400" />;
+        return <Plus className="size-4 text-green-500" />;
       case "UPDATE":
-        return <Edit className="w-4 h-4 text-blue-400" />;
+        return <Edit className="size-4 text-electric_indigo-500" />;
       case "DELETE":
-        return <Minus className="w-4 h-4 text-red-400" />;
+        return <Minus className="size-4 text-red-500" />;
       default:
-        return <Clock className="w-4 h-4 text-slate-400" />;
+        return <Clock className="size-4 text-slate-500" />;
     }
   };
 
@@ -86,7 +86,7 @@ export const ViewPitChangesModal = ({
       case "DELETE":
         return "bg-red-500/20 text-red-300 hover:bg-red/40 border-red-500/30";
       default:
-        return "bg-slate-500/20 text-slate-300 border-slate-500/30";
+        return "bg-slate-500/20 text-slate-300 hover:bg-slate/40 border-slate-500/30";
     }
   };
 
@@ -177,7 +177,7 @@ export const ViewPitChangesModal = ({
                     Created By
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                    <div className="w-6 h-6 bg-gradient-to-br from-electric_indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
                       {getUserInitials(pitData.user_id)}
                     </div>
                     <p className="text-white font-medium text-sm">
@@ -259,11 +259,11 @@ export const ViewPitChangesModal = ({
                       Created
                     </div>
                   </div>
-                  <div className="text-center p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                    <div className="text-2xl font-bold text-blue-400">
+                  <div className="text-center p-4 bg-electric_indigo-500/10 rounded-lg border border-electric_indigo-500/20">
+                    <div className="text-2xl font-bold text-electric_indigo-500">
                       {changeStats.updated}
                     </div>
-                    <div className="text-sm text-blue-300 flex items-center justify-center gap-1 mt-1">
+                    <div className="text-sm text-electric_indigo-600 flex items-center justify-center gap-1 mt-1">
                       <Edit className="w-3 h-3" />
                       Updated
                     </div>

@@ -19,6 +19,7 @@ import {
   Shield,
   MoreVertical,
   DatabaseBackup,
+  History,
 } from "lucide-react";
 
 interface ProjectEnvironmentsHeaderProps {
@@ -151,7 +152,7 @@ export const ProjectEnvironmentsHeader = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-blue-400 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-electric_indigo-400 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Database className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -253,8 +254,8 @@ export const ProjectEnvironmentsHeader = ({
                 onClick={onRollback}
                 className="text-white hover:bg-slate-700 cursor-pointer"
               >
-                <DatabaseBackup className="w-4 h-4 mr-2" />
-                Rollback
+                <History className="w-4 h-4 mr-2" />
+                Recovery
               </DropdownMenuItem>
               {canEdit && (
                 <DropdownMenuItem

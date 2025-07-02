@@ -72,7 +72,7 @@ const ENVIRONMENT_COLORS = [
   "bg-violet-500",
   "bg-veronica-500",
   "bg-magenta-500",
-  "bg-blue-500",
+  "bg-electric_indigo-500",
   "bg-green-500",
   "bg-yellow-500",
 ] as const;

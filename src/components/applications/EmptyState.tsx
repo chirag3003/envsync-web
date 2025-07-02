@@ -10,14 +10,17 @@ export const EmptyState = ({ canEdit, onCreateProject }: EmptyStateProps) => {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center max-w-md">
-        <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-blue-400 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/20">
+        <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-electric_indigo-400 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/20">
           <Database className="w-8 h-8 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-white mb-2">No projects yet</h3>
+        <h3 className="text-xl font-semibold text-white mb-2">
+          No projects yet
+        </h3>
         {canEdit && (
           <>
             <p className="text-slate-400 mb-6">
-              Create your first project to start managing environment variables and configurations.
+              Create your first project to start managing environment variables
+              and configurations.
             </p>
             <Button
               onClick={onCreateProject}

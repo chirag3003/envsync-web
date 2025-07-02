@@ -17,6 +17,7 @@ import {
   Code,
   Eye,
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 
 interface User {
   id: string;
@@ -107,11 +108,20 @@ export const UserRow = ({
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
             {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={`${user.name} profile`}
-                className="w-full h-full object-cover"
-              />
+              <Avatar className="w-full h-full rounded-none overflow-hidden">
+                <AvatarImage
+                  src={user.avatar}
+                  alt={`${user.name} profile`}
+                  className="w-full h-full object-cover"
+                />
+                <AvatarFallback className="bg-inherit text-white">
+                  {user.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             ) : (
               <span className="text-white text-sm font-medium">
                 {user.name

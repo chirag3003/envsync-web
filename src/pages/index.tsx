@@ -19,7 +19,7 @@ import ManageEnvironment from "@/pages/ManageEnvironment";
 import PointInTimeVariables from "@/pages/PointInTimeVariables";
 import PointInTimeSecrets from "@/pages/PointInTimeSecrets";
 
-export const Index = () => {
+export const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -62,4 +62,4 @@ export const Index = () => {
   );
 };
 
-export default Index;
+export default AppRoutes;

@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserRow } from "./UserRow";
+import { UserRow, UserRowSkeleton } from "./UserRow";
 import { EmptyState } from "./EmptyState";
 import { Users } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
+import { Count } from "../ui/count";
 
 interface User {
   id: string;
@@ -15,15 +17,18 @@ interface User {
 }
 
 interface UsersTableProps {
-  users: User[];
+  loading?: boolean;
+  users?: User[];
   actionLoadingStates: Record<string, boolean>;
   canManageUsers: boolean;
   onInviteClick: () => void;
   onEditRole: (user: User) => void;
   onDeleteUser: (user: User) => void;
+  refetch: () => void;
 }
 
 export const UsersTable = ({
+  loading = true,
   users,
   actionLoadingStates,
   canManageUsers,
@@ -35,12 +40,18 @@ export const UsersTable = ({
     <Card className="bg-gray-800 border-gray-700">
       <CardHeader className="flex flex-row gap-3">
         <Users className="size-8 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
-        <CardTitle className="text-white">
-          Team Members ({users.length})
+        <CardTitle className="text-white gap-2 flex items-center">
+          Team Members
+          <Count
+            size="xl"
+            count={users?.length}
+            variant="subtle"
+            className="ml-2"
+          />
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {users.length === 0 ? (
+        {!loading && users.length === 0 ? (
           <EmptyState onInviteClick={onInviteClick} />
         ) : (
           <div className="overflow-x-auto">
@@ -59,24 +70,26 @@ export const UsersTable = ({
                   <th className="text-left py-3 px-4 text-gray-400 font-medium">
                     Last Seen
                   </th>
-                  {canManageUsers && (
-                    <th className="text-right py-3 px-4 text-gray-400 font-medium">
-                      Actions
-                    </th>
-                  )}
+                  <th className="text-right py-3 px-4 text-gray-400 font-medium">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <UserRow
-                    key={user.id}
-                    user={user}
-                    isLoading={actionLoadingStates[user.id]}
-                    canManageUsers={canManageUsers}
-                    onEditRole={onEditRole}
-                    onDeleteUser={onDeleteUser}
-                  />
-                ))}
+                {loading
+                  ? Array.from({ length: 6 }, (_, index) => (
+                      <UserRowSkeleton key={index} />
+                    ))
+                  : users.map((user) => (
+                      <UserRow
+                        key={user.id}
+                        user={user}
+                        isLoading={actionLoadingStates[user.id]}
+                        canManageUsers={canManageUsers}
+                        onEditRole={onEditRole}
+                        onDeleteUser={onDeleteUser}
+                      />
+                    ))}
               </tbody>
             </table>
           </div>

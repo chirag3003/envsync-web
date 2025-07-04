@@ -1,13 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { UserPlus2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { InviteUserModal } from "@/components/users/InviteUserModal";
 import { EditRoleModal } from "@/components/users/EditRoleModal";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { UsersTable } from "@/components/users/UsersTable";
-import { UsersLoadingPage } from "./loading";
-import { UsersErrorPage } from "./error";
 import { useUsers } from "@/hooks/useUsers";
 
 interface User {
@@ -27,7 +25,6 @@ export const Users = () => {
     users,
     roles,
     isLoading,
-    error,
     selectedUserId,
     selectedUserName,
     emailAddress,
@@ -47,6 +44,7 @@ export const Users = () => {
     resetInviteForm,
     resetEditForm,
     resetDeleteForm,
+    refetch,
   } = useUsers();
 
   // Dialog states
@@ -131,16 +129,10 @@ export const Users = () => {
     resetDeleteForm();
   }, [resetDeleteForm]);
 
-  if (isLoading || !user) {
-    return <UsersLoadingPage />;
-  }
-
-  if (error) {
-    return <UsersErrorPage />;
-  }
-
-  const { is_admin, is_master } = user.role;
-  const canManageUsers = is_admin || is_master;
+  const canManageUsers = useMemo(() => {
+    if (!user?.role) return false;
+    return user.role.is_master || user.role.is_admin;
+  }, [user]);
 
   return (
     <div className="space-y-6">
@@ -157,7 +149,7 @@ export const Users = () => {
             onClick={() => setShowInviteUserModalOpen(true)}
             disabled={inviteUserMutation.isPending}
           >
-            <Plus className="size-4 mr-2" />
+            <UserPlus2 className="size-4 mr-1" />
             Invite Member
           </Button>
         )}
@@ -211,11 +203,13 @@ export const Users = () => {
       {/* Users Table */}
       <UsersTable
         users={users}
+        loading={isLoading}
         actionLoadingStates={actionLoadingStates}
         canManageUsers={canManageUsers}
         onInviteClick={() => setShowInviteUserModalOpen(true)}
         onEditRole={handleOpenEditModal}
         onDeleteUser={handleOpenDeleteModal}
+        refetch={refetch}
       />
     </div>
   );

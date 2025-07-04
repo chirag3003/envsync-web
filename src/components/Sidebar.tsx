@@ -15,10 +15,7 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   const { pathname } = useLocation();
 
   const authorizedNavItems = useMemo(
-    () =>
-      navItems.filter((item) => {
-        return allowedScopes.includes(item.id);
-      }),
+    () => navItems.filter((item) => allowedScopes.includes(item.id)),
     [allowedScopes]
   );
 

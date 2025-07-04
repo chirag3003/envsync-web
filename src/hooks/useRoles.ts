@@ -1,6 +1,12 @@
 import { api } from "@/api";
+import { Role } from "@/api/roles.api";
 import { API_KEYS } from "@/constants";
+import { UserResponse } from "@envsync-cloud/envsync-ts-sdk";
 import { useQuery } from "@tanstack/react-query";
+
+export type RoleData = Role & {
+  users: UserResponse[];
+};
 
 export const useRolesTable = () => {
   const roles = api.roles.getAllRoles();
@@ -18,7 +24,6 @@ export const useRolesTable = () => {
       }));
     },
     retry: 3,
-    initialData: [],
     refetchInterval: 1 * 60 * 1000,
     enabled: !!roles.data && !!users.data,
   });

@@ -43,12 +43,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AuditActions } from "@/lib/audit.type";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AuditLog {
   id: string;
   action: AuditActions;
   details: string;
-  user: string;
+  user_name: string;
+  profile_picture: string;
   user_id: string;
   timestamp: string;
   created_at: string;
@@ -271,8 +273,9 @@ export const AuditLogs = () => {
           action: log.action as AuditActions,
           details:
             log.details || getActionDescription(log.action as AuditActions),
-          user: usersMap.get(log.user_id)?.full_name || "Unknown User",
+          user_name: usersMap.get(log.user_id)?.full_name || "Unknown User",
           user_id: log.user_id,
+          profile_picture: usersMap.get(log.user_id)?.profile_picture_url || "",
           timestamp: new Date(log.created_at).toLocaleString(),
           created_at: log.created_at,
           // project: log.metadata?.project_name || "",
@@ -595,46 +598,6 @@ export const AuditLogs = () => {
     [formatDate]
   );
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="size-12 border-4 border-t-electric_indigo-500 border-gray-700 rounded-full animate-spin"></div>
-          <p className="text-gray-400">Loading audit logs...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center space-y-4 text-center">
-          <AlertTriangle className="w-12 h-12 text-red-400" />
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-2">
-              Failed to load audit logs
-            </h3>
-            <p className="text-gray-400 mb-4">
-              {error instanceof Error
-                ? error.message
-                : "An unexpected error occurred"}
-            </p>
-            <Button
-              onClick={handleRefresh}
-              className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 w-full mx-auto">
       {/* Header Section */}
@@ -899,13 +862,13 @@ export const AuditLogs = () => {
                   <thead>
                     <tr className="border-b border-gray-700">
                       <th className="text-left py-3 px-4 text-gray-400 font-medium">
+                        User
+                      </th>
+                      <th className="text-left py-3 px-4 text-gray-400 font-medium">
                         Action
                       </th>
                       <th className="text-left py-3 px-4 text-gray-400 font-medium">
                         Resource
-                      </th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">
-                        User
                       </th>
                       <th className="text-left py-3 px-4 text-gray-400 font-medium">
                         Time
@@ -921,6 +884,34 @@ export const AuditLogs = () => {
                         key={log.id}
                         className="border-b border-gray-700 hover:bg-gray-750 transition-colors"
                       >
+                        <td className="py-4 px-4">
+                          <div className="flex items-center space-x-2">
+                            <div className="size-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+                              <Avatar className="w-full h-full rounded-none overflow-hidden">
+                                <AvatarImage
+                                  src={log.profile_picture}
+                                  alt={`${log.user_name} profile`}
+                                  className="w-full h-full object-cover"
+                                />
+                                <AvatarFallback className="bg-inherit text-white">
+                                  {log.user_name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-white">
+                                {log.user_name}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {log.ip_address || "Unknown IP"}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center space-x-3">
                             <Badge
@@ -944,19 +935,6 @@ export const AuditLogs = () => {
                               </div>
                               <div className="text-xs text-gray-400">
                                 {log.resource_type || "system"}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-2">
-                            <User className="w-4 h-4 text-gray-400" />
-                            <div>
-                              <div className="text-sm font-medium text-white">
-                                {log.user}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {log.ip_address || "Unknown IP"}
                               </div>
                             </div>
                           </div>

@@ -38,16 +38,11 @@ export const UsersTable = ({
 }: UsersTableProps) => {
   return (
     <Card className="bg-gray-800 border-gray-700">
-      <CardHeader className="flex flex-row gap-3">
-        <Users className="size-8 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
-        <CardTitle className="text-white gap-2 flex items-center">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center gap-3">
+          <Users className="size-8 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
           Team Members
-          <Count
-            size="xl"
-            count={users?.length}
-            variant="subtle"
-            className="ml-2"
-          />
+          <Count size="xl" variant="subtle" count={users?.length} />
         </CardTitle>
       </CardHeader>
       <CardContent>

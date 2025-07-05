@@ -44,23 +44,8 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AuditActions } from "@/lib/audit.type";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface AuditLog {
-  id: string;
-  action: AuditActions;
-  details: string;
-  user_name: string;
-  profile_picture: string;
-  user_id: string;
-  timestamp: string;
-  created_at: string;
-  project?: string;
-  environment?: string;
-  resource_type?: string;
-  resource_id?: string;
-  ip_address?: string;
-  user_agent?: string;
-}
+import { AuditLog, AuditLogRow } from "@/components/audit/row";
+import { AuditLogRowSkeleton } from "@/components/audit/loading";
 
 interface PaginationInfo {
   page: number;
@@ -430,19 +415,19 @@ export const AuditLogs = () => {
 
       switch (category) {
         case "create":
-          return "bg-green-900 text-green-300 border-green-800";
+          return "bg-green-900 hover:bg-green-900 text-green-300 border-green-800";
         case "update":
-          return "bg-electric_indigo-900 text-electric_indigo-300 border-electric_indigo-800";
+          return "bg-electric_indigo-900 hover:bg-electric_indigo-900 text-electric_indigo-300 border-electric_indigo-800";
         case "delete":
-          return "bg-red-900 text-red-300 border-red-800";
+          return "bg-red-900 hover:bg-red-900 text-red-300 border-red-800";
         case "view":
-          return "bg-gray-700 text-gray-300 border-gray-600";
+          return "bg-gray-700 hover:bg-gray-700 text-gray-300 border-gray-600";
         case "auth":
-          return "bg-purple-900 text-purple-300 border-purple-800";
+          return "bg-purple-900 hover:bg-purple-900 text-purple-300 border-purple-800";
         case "cli":
-          return "bg-yellow-900 text-yellow-300 border-yellow-800";
+          return "bg-yellow-900 hover:bg-yellow-900 text-yellow-300 border-yellow-800";
         default:
-          return "bg-gray-700 text-gray-300 border-gray-600";
+          return "bg-gray-700 hover:bg-gray-700 text-gray-300 border-gray-600";
       }
     },
     [getActionCategory]
@@ -451,7 +436,7 @@ export const AuditLogs = () => {
   const getActionIcon = useCallback(
     (action: AuditActions): JSX.Element => {
       const category = getActionCategory(action);
-      const iconClass = "w-3 h-3";
+      const iconClass = "size-4 stroke-1";
 
       switch (category) {
         case "create":
@@ -474,7 +459,7 @@ export const AuditLogs = () => {
   );
 
   const getResourceIcon = useCallback((resourceType: string): JSX.Element => {
-    const iconClass = "w-4 h-4";
+    const iconClass = "size-6 stroke-1";
 
     switch (resourceType) {
       case "app":
@@ -515,10 +500,6 @@ export const AuditLogs = () => {
       totalPages: Math.ceil(prev.total / pageSize),
     }));
   }, []);
-
-  const handleRefresh = useCallback(() => {
-    refetch();
-  }, [refetch]);
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
@@ -566,37 +547,9 @@ export const AuditLogs = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination]);
 
-  // Format date helper
-  const formatDate = useCallback((dateString: string) => {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    }).format(new Date(dateString));
-  }, []);
-
-  // Get relative time helper
-  const getRelativeTime = useCallback(
-    (dateString: string) => {
-      const now = new Date();
-      const date = new Date(dateString);
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / (1000 * 60));
-      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-      if (diffMins < 1) return "Just now";
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      return formatDate(dateString);
-    },
-    [formatDate]
-  );
+  const isEmpty = useMemo(() => {
+    return !isLoading && displayData.length === 0 && !error;
+  }, [isLoading, displayData.length, error]);
 
   return (
     <div className="space-y-6 w-full mx-auto">
@@ -623,7 +576,7 @@ export const AuditLogs = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            onClick={handleRefresh}
+            onClick={() => refetch()}
             variant="outline"
             size="sm"
             className="text-gray-400 border-gray-600 hover:bg-gray-700"
@@ -828,7 +781,7 @@ export const AuditLogs = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {displayData.length === 0 ? (
+          {isEmpty ? (
             <div className="text-center py-12">
               <Activity className="w-12 h-12 text-gray-600 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">
@@ -879,93 +832,30 @@ export const AuditLogs = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {displayData.map((log) => (
-                      <tr
-                        key={log.id}
-                        className="border-b border-gray-700 hover:bg-gray-750 transition-colors"
-                      >
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-2">
-                            <div className="size-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-                              <Avatar className="w-full h-full rounded-none overflow-hidden">
-                                <AvatarImage
-                                  src={log.profile_picture}
-                                  alt={`${log.user_name} profile`}
-                                  className="w-full h-full object-cover"
-                                />
-                                <AvatarFallback className="bg-inherit text-white">
-                                  {log.user_name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")
-                                    .toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-white">
-                                {log.user_name}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {log.ip_address || "Unknown IP"}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-3">
-                            <Badge
-                              className={`${getActionBadgeColor(
+                    {isLoading
+                      ? Array.from(
+                          { length: pagination.pageSize },
+                          (_, index) => <AuditLogRowSkeleton key={index} />
+                        )
+                      : displayData.map((log) => (
+                          <AuditLogRow
+                            key={log.id}
+                            log={{
+                              ...log,
+                              action: log.action as AuditActions,
+                              actionDescription: getActionDescription(
                                 log.action
-                              )} border flex items-center space-x-1`}
-                            >
-                              {getActionIcon(log.action)}
-                              <span className="text-xs font-medium">
-                                {getActionCategory(log.action)}
-                              </span>
-                            </Badge>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-2">
-                            {getResourceIcon(log.resource_type || "system")}
-                            <div>
-                              <div className="text-sm font-medium text-white">
-                                {log.project || log.environment || "System"}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {log.resource_type || "system"}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-3 h-3 text-gray-400" />
-                            <div>
-                              <div className="text-sm text-gray-300">
-                                {getRelativeTime(log.created_at)}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {formatDate(log.created_at)}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div>
-                            <div className="text-sm font-medium text-white">
-                              {getActionDescription(log.action)}
-                            </div>
-                            {log.details && (
-                              <div className="text-xs text-gray-400 mt-1 max-w-xs truncate">
-                                {log.details}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              ),
+                              actionCategory: getActionCategory(log.action),
+                              actionBadgeColor: getActionBadgeColor(log.action),
+                              actionIcon: getActionIcon(log.action),
+                              resourceIcon: getResourceIcon(
+                                getResourceTypeFromAction(log.action) ||
+                                  "System"
+                              ),
+                            }}
+                          />
+                        ))}
                   </tbody>
                 </table>
               </div>

@@ -8,6 +8,22 @@ import {
 import { API_KEYS } from "../constants";
 import { useInvalidateQueries } from "@/hooks/useApi";
 
+export type ApiKeyRowData = {
+  created_by: {
+    name: string;
+    email: string;
+  };
+  last_used_at: Date;
+  created_at: Date;
+  updated_at: Date;
+  id: string;
+  user_id: string;
+  org_id: string;
+  description: string;
+  is_active: boolean;
+  key: string;
+};
+
 const useApiKeys = () => {
   return useQuery({
     queryKey: [API_KEYS.ALL_API_KEYS],
@@ -32,7 +48,6 @@ const useApiKeys = () => {
     },
     refetchInterval: 5 * 60 * 1000,
     retry: 3,
-    initialData: [],
   });
 };
 

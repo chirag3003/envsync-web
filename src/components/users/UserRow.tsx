@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatLastUsed } from "@/lib/utils";
+import { formatDate, formatLastUsed } from "@/lib/utils";
 import {
   Mail,
   MoreHorizontal,
@@ -155,9 +155,11 @@ export const UserRow = ({
       </td>
       <td className="py-4 px-4">
         <span className="text-sm text-gray-400">
-          {formatLastUsed(new Date(user.lastSeen))}
+          {formatLastUsed(user.lastSeen)}
         </span>
-        <span className="text-xs text-gray-500 block">{user.lastSeen}</span>
+        <span className="text-xs text-gray-500 block">
+          {formatDate(user.lastSeen)}
+        </span>
       </td>
       {canManageUsers && (
         <td className="py-4 px-4 flex justify-end">

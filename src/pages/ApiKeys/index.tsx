@@ -1,16 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Plus,
-  Key,
-  RefreshCw,
-  ShieldBan,
-  ShieldCheck,
-  Trash2,
-  Copy,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Plus, Key, Copy } from "lucide-react";
 import { useState, useCallback } from "react";
 import {
   Dialog,
@@ -25,9 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/api";
 import { toast } from "sonner";
 import { useCopy } from "@/hooks/useClipboard";
-import { formatLastUsed } from "@/lib/utils";
-import { ApiKeysErrorPage } from "./error";
-import { ApiKeysLoadingPage } from "./loading";
+import { Count } from "@/components/ui/count";
+import { ApiKeyRow } from "@/components/api-keys/row";
+import { EmptyApiKeys } from "./empty";
 
 export const ApiKeys = () => {
   const copy = useCopy();
@@ -45,7 +36,7 @@ export const ApiKeys = () => {
     setActionLoadingStates((prev) => ({ ...prev, [keyId]: loading }));
   }, []);
 
-  const { data: apiKeys, isLoading, error } = api.apiKeys.getApiKeys();
+  const { data: apiKeys, isLoading } = api.apiKeys.getApiKeys();
 
   const createApiKey = api.apiKeys.createApiKey({
     onSuccess: ({ data }) => {
@@ -142,11 +133,7 @@ export const ApiKeys = () => {
     [actionLoadingStates, updateApiKey]
   );
 
-  if (isLoading) {
-    return <ApiKeysLoadingPage />;
-  } else if (error) {
-    return <ApiKeysErrorPage />;
-  }
+  const isEmpty = !isLoading && apiKeys.length === 0;
 
   return (
     <div className="space-y-6">
@@ -279,189 +266,88 @@ export const ApiKeys = () => {
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Key className="size-8 mr-3 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
-            API Keys ({apiKeys.length})
+            API Keys
+            <Count
+              count={apiKeys?.length}
+              size="xl"
+              variant="subtle"
+              className="ml-2"
+            />
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  {[
-                    "Description",
-                    "API Key",
-                    "Status",
-                    "Last Used",
-                    "Created",
-                    "Created by",
-                  ].map((header) => (
-                    <th
-                      key={header}
-                      className="text-left py-3 px-4 text-gray-400 font-medium"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                  <th className="text-right py-3 px-4 text-gray-400 font-medium">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {apiKeys.map((apiKey) => (
-                  <tr
-                    key={apiKey.id}
-                    className="border-b border-gray-700 hover:bg-gray-750"
-                  >
-                    <td className="py-4 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-white">
-                          {apiKey.description || "Untitled"}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          ID: {apiKey.id}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center space-x-2">
-                        <code className="text-sm font-mono text-gray-300 bg-gray-900 px-2 py-1 rounded">
-                          {`${apiKey.key.substring(
-                            0,
-                            8
-                          )}...${apiKey.key.substring(apiKey.key.length - 8)}`}
-                        </code>
-                        {/* <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-                          onClick={() => copy.mutate(apiKey.key)}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button> */}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge
-                        className={`${
-                          apiKey.is_active
-                            ? "bg-green-900 text-green-300 border-green-800"
-                            : "bg-gray-700 text-gray-300 border-gray-600"
-                        } border`}
+          {isEmpty ? (
+            <EmptyApiKeys
+              isCreatingApiKey={createApiKey.isPending}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    {[
+                      "Description",
+                      "API Key",
+                      "Status",
+                      "Last Used",
+                      "Created",
+                      "Created by",
+                    ].map((header) => (
+                      <th
+                        key={header}
+                        className="text-left py-3 px-4 text-gray-400 font-medium"
                       >
-                        {apiKey.is_active ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-gray-400">
-                        {formatLastUsed(apiKey.last_used_at)}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-gray-400">
-                        {apiKey.created_at.toLocaleDateString()}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-white">
-                          {apiKey.created_by?.name || "Unknown"}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {apiKey.created_by?.email}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRegenerateKey(apiKey.id)}
-                          disabled={
-                            actionLoadingStates[apiKey.id] ||
-                            regenerateApiKey.isPending
-                          }
-                          className="text-white border-gray-600 hover:bg-gray-700"
-                          title="Regenerate API Key"
-                        >
-                          {actionLoadingStates[apiKey.id] ? (
-                            <div className="size-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <RefreshCw className="size-3" />
-                          )}
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleToggleApiKey(apiKey.id, apiKey.is_active)
-                          }
-                          disabled={
-                            actionLoadingStates[apiKey.id] ||
-                            updateApiKey.isPending
-                          }
-                          className="text-white border-gray-600 hover:bg-gray-700"
-                          title={
-                            apiKey.is_active
-                              ? "Disable API Key"
-                              : "Enable API Key"
-                          }
-                        >
-                          {actionLoadingStates[apiKey.id] ? (
-                            <div className="size-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          ) : apiKey.is_active ? (
-                            <ShieldBan className="size-3" />
-                          ) : (
-                            <ShieldCheck className="size-3" />
-                          )}
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteApiKey(apiKey.id)}
-                          disabled={
-                            actionLoadingStates[apiKey.id] ||
-                            deleteApiKey.isPending
-                          }
-                          className="text-red-400 border-red-600 hover:bg-red-900/20 hover:text-red-300"
-                          title="Delete API Key"
-                        >
-                          {actionLoadingStates[apiKey.id] ? (
-                            <div className="size-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <Trash2 className="size-3" />
-                          )}
-                        </Button>
-                      </div>
-                    </td>
+                        {header}
+                      </th>
+                    ))}
+                    <th className="text-right py-3 px-4 text-gray-400 font-medium">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {apiKeys.length === 0 && (
-            <div className="text-center py-12">
-              <Key className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-white mb-2">
-                No API Keys
-              </h3>
-              <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Create your first API key to start using EnvSync services. API
-                keys allow you to authenticate and access our APIs
-                programmatically.
-              </p>
-              <Button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
-                disabled={createApiKey.isPending}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Your First API Key
-              </Button>
+                </thead>
+                <tbody>
+                  {isLoading
+                    ? Array.from({ length: 6 }, (_, index) => (
+                        <tr key={index} className="animate-pulse">
+                          <td className="py-4 px-4">
+                            <div className="h-4 bg-gray-700 rounded w-3/4" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="h-4 bg-gray-700 rounded w-full" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="h-4 bg-gray-700 rounded w-1/2" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="h-4 bg-gray-700 rounded w-1/3" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="h-4 bg-gray-700 rounded w-1/3" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="h-4 bg-gray-700 rounded w-full" />
+                          </td>
+                          <td className="py-4 px-4 text-right">
+                            <div className="h-6 bg-gray-700 rounded w-full" />
+                          </td>
+                        </tr>
+                      ))
+                    : apiKeys.map((apiKey) => (
+                        <ApiKeyRow
+                          key={apiKey.id}
+                          apiKey={apiKey}
+                          isRegenerating={regenerateApiKey.isPending}
+                          isLoading={actionLoadingStates[apiKey.id]}
+                          isUpdating={updateApiKey.isPending}
+                          isDeleting={deleteApiKey.isPending}
+                          handleRegenerateKey={handleRegenerateKey}
+                          handleToggleApiKey={handleToggleApiKey}
+                          handleDeleteApiKey={handleDeleteApiKey}
+                        />
+                      ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

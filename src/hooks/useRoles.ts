@@ -25,6 +25,5 @@ export const useRolesTable = () => {
     },
     retry: 3,
     refetchInterval: 1 * 60 * 1000,
-    enabled: !!roles.data && !!users.data,
   });
 };

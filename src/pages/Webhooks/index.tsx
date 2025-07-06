@@ -8,8 +8,7 @@ import {
   ShieldBan,
   ShieldCheck,
   Trash2,
-  Copy,
-  ExternalLink,
+  GlobeLock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState, useCallback, useEffect } from "react";
@@ -32,11 +31,14 @@ import {
 import { api } from "@/api";
 import { toast } from "sonner";
 import { useCopy } from "@/hooks/useClipboard";
-import { formatLastUsed } from "@/lib/utils";
+import { cn, formatDate, formatLastUsed } from "@/lib/utils";
 import { WebHooksErrorPage } from "./error";
 import { WebHooksLoadingPage } from "./loading";
 import { CreateWebhookRequest } from "@envsync-cloud/envsync-ts-sdk";
 import { WEBHOOK_EVENT_CATEGORIES } from "@/constants";
+import { SiDiscord, SiSlack } from "@icons-pack/react-simple-icons";
+import { Count } from "@/components/ui/count";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Webhook event types
 const WEBHOOK_EVENTS = [
@@ -53,9 +55,21 @@ const WEBHOOK_EVENTS = [
 
 // Webhook types based on the API
 const WEBHOOK_TYPES = [
-  { value: "CUSTOM", label: "HTTP/HTTPS" },
-  { value: "SLACK", label: "SLACK" },
-  { value: "DISCORD", label: "DISCORD" },
+  {
+    value: "CUSTOM",
+    label: "HTTP/HTTPS",
+    color: "bg-yellow-500/20 hover:bg-yellow-500/50 border-yellow-700",
+  },
+  {
+    value: "SLACK",
+    label: "SLACK",
+    color: "bg-fuchsia-500/20 hover:bg-fuchsia-500/50 border-fuchsia-700",
+  },
+  {
+    value: "DISCORD",
+    label: "DISCORD",
+    color: "bg-indigo-500/20 hover:bg-indigo-500/50 border-indigo-700",
+  },
 ];
 
 // Linked to options
@@ -88,6 +102,19 @@ export const WebHooks = () => {
     },
     []
   );
+
+  const getWebhookTypeIcon = useCallback((type: string) => {
+    const commonClassname = "size-3";
+
+    switch (type) {
+      case "SLACK":
+        return <SiSlack className={commonClassname} />;
+      case "DISCORD":
+        return <SiDiscord className={commonClassname} />;
+      default:
+        return <GlobeLock className={commonClassname} />;
+    }
+  }, []);
 
   // Move ALL hooks to the top level - no conditional hooks
   const { data: webhooks, isLoading, error } = api.webhooks.getWebhooks();
@@ -286,11 +313,13 @@ export const WebHooks = () => {
     [newWebhookData.event_types]
   );
 
-  if (isLoading) {
-    return <WebHooksLoadingPage />;
-  } else if (error) {
-    return <WebHooksErrorPage />;
-  }
+  // if (isLoading) {
+  //   return <WebHooksLoadingPage />;
+  // } else if (error) {
+  //   return <WebHooksErrorPage />;
+  // }
+
+  const isEmpty = !isLoading && !webhooks.length;
 
   return (
     <div className="space-y-6">
@@ -324,7 +353,7 @@ export const WebHooks = () => {
                 your projects.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="space-y-4 overflow-y-auto hide-scrollbar px-1">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-white">
@@ -582,208 +611,18 @@ export const WebHooks = () => {
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Webhook className="size-8 mr-3 bg-electric_indigo-400 border border-electric_indigo-600 p-2 stroke-[3] text-white rounded-md" />
-            Webhooks ({webhooks?.length || 0})
+            Webhooks
+            <Count
+              className="ml-2"
+              count={webhooks?.length}
+              variant="subtle"
+              size="xl"
+            />
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  {[
-                    "Name",
-                    "URL",
-                    "Type",
-                    "Events",
-                    "Status",
-                    "Last Triggered",
-                    "Created",
-                    "Created by",
-                  ].map((header) => (
-                    <th
-                      key={header}
-                      className="text-left py-3 px-4 text-gray-400 font-medium"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                  <th className="text-right py-3 px-4 text-gray-400 font-medium">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {webhooks?.map((webhook) => (
-                  <tr
-                    key={webhook.id}
-                    className="border-b border-gray-700 hover:bg-gray-750"
-                  >
-                    <td className="py-4 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-white">
-                          {webhook.name || "Untitled"}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          ID: {webhook.id}
-                        </span>
-                        <span className="text-xs text-gray-500 mt-1">
-                          Linked to: {webhook.linked_to}
-                          {webhook.app_id && (
-                            <>
-                              <br />
-                              App:{" "}
-                              {applications?.find(
-                                (app) => app.id === webhook.app_id
-                              )?.name || webhook.app_id}
-                            </>
-                          )}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center space-x-2">
-                        <code className="text-sm font-mono text-gray-300 bg-gray-900 px-2 py-1 rounded max-w-xs truncate">
-                          {webhook.url}
-                        </code>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-                          onClick={() => copy.mutate(webhook.url)}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-                          onClick={() => window.open(webhook.url, "_blank")}
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge
-                        variant="secondary"
-                        className="text-xs bg-electric_indigo-900/20 text-electric_indigo-300 border-electric_indigo-800"
-                      >
-                        {WEBHOOK_TYPES.find(
-                          (t) => t.value === webhook.webhook_type
-                        )?.label || webhook.webhook_type}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex flex-wrap gap-1">
-                        {webhook.event_types?.slice(0, 2).map((event) => (
-                          <Badge
-                            key={event}
-                            variant="secondary"
-                            className="text-xs bg-gray-700 text-gray-300"
-                          >
-                            {WEBHOOK_EVENTS.find(
-                              (e) => e.value === event
-                            )?.label.split(" ")[0] || event}
-                          </Badge>
-                        ))}
-                        {webhook.event_types?.length > 2 && (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs bg-gray-700 text-gray-300"
-                          >
-                            +{webhook.event_types.length - 2} more
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          className={`${
-                            webhook.is_active
-                              ? "bg-green-900 text-green-300 border-green-800"
-                              : "bg-gray-700 text-gray-300 border-gray-600"
-                          } border`}
-                        >
-                          {webhook.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-gray-400">
-                        {formatLastUsed(webhook.last_triggered_at)}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-gray-400">
-                        {webhook.created_at.toLocaleDateString()}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-white">
-                          {webhook.created_by?.name || "Unknown"}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {webhook.created_by?.email}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleToggleWebhook(webhook.id, webhook.is_active)
-                          }
-                          disabled={
-                            actionLoadingStates[webhook.id] ||
-                            updateWebhook.isPending
-                          }
-                          className="text-white border-gray-600 hover:bg-gray-700"
-                          title={
-                            webhook.is_active
-                              ? "Disable Webhook"
-                              : "Enable Webhook"
-                          }
-                        >
-                          {actionLoadingStates[webhook.id] ? (
-                            <div className="size-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          ) : webhook.is_active ? (
-                            <ShieldBan className="size-3" />
-                          ) : (
-                            <ShieldCheck className="size-3" />
-                          )}
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteWebhook(webhook.id)}
-                          disabled={
-                            actionLoadingStates[webhook.id] ||
-                            deleteWebhook.isPending
-                          }
-                          className="text-red-400 border-red-600 hover:bg-red-900/20 hover:text-red-300"
-                          title="Delete Webhook"
-                        >
-                          {actionLoadingStates[webhook.id] ? (
-                            <div className="size-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <Trash2 className="size-3" />
-                          )}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {(!webhooks || webhooks.length === 0) && (
-            <div className="text-center py-12">
+          {isEmpty ? (
+            <div className="text-center py-12 rounded-xl bg-gray-900/40 border border-dashed border-gray-700">
               <Webhook className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <h3 className="text-xl font-medium text-white mb-2">
                 No Webhooks
@@ -802,12 +641,265 @@ export const WebHooks = () => {
                 Create Your First Webhook
               </Button>
             </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    {[
+                      "Name",
+                      "URL",
+                      "Type",
+                      "Events",
+                      "Status",
+                      "Last Triggered",
+                      "Created At",
+                      "Created by",
+                    ].map((header) => (
+                      <th
+                        key={header}
+                        className="text-left text-nowrap py-3 px-4 text-gray-400 font-medium"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                    <th className="text-right py-3 px-4 text-gray-400 font-medium">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading
+                    ? Array.from({ length: 6 }, (_, index) => (
+                        <tr key={index} className="border-b border-gray-700">
+                          <td className="py-4 px-4">
+                            <div className="flex flex-col gap-2">
+                              <Skeleton className="h-5 w-36 bg-gray-700" />
+                              <Skeleton className="h-3 w-24 bg-gray-700/70" />
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center">
+                              <Skeleton className="h-8 w-32 bg-gray-700 rounded" />
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Skeleton className="h-6 w-24 bg-gray-700 rounded-full" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex gap-1">
+                              <Skeleton className="h-5 w-16 bg-gray-700 rounded-full" />
+                              <Skeleton className="h-5 w-16 bg-gray-700 rounded-full" />
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Skeleton className="h-6 w-16 bg-gray-700 rounded-full" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <Skeleton className="h-5 w-28 bg-gray-700" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <Skeleton className="h-5 w-28 bg-gray-700" />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex flex-col gap-1">
+                              <Skeleton className="h-5 w-24 bg-gray-700" />
+                              <Skeleton className="h-3 w-36 bg-gray-700/70" />
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Skeleton className="h-8 w-8 bg-gray-700 rounded-md" />
+                              <Skeleton className="h-8 w-8 bg-gray-700 rounded-md" />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    : webhooks?.map((webhook) => (
+                        <tr
+                          key={webhook.id}
+                          className="border-b border-gray-700 hover:bg-gray-750"
+                        >
+                          <td className="py-4 px-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-white">
+                                {webhook.name || "Untitled"}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                ID: {webhook.id}
+                              </span>
+                              <span className="text-xs text-gray-500 mt-1">
+                                Linked to: {webhook.linked_to}
+                                {webhook.app_id && (
+                                  <>
+                                    <br />
+                                    App:{" "}
+                                    {applications?.find(
+                                      (app) => app.id === webhook.app_id
+                                    )?.name || webhook.app_id}
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center space-x-2">
+                              <code className="text-sm font-mono text-gray-300 bg-gray-900 px-2 py-1 rounded max-w-xs truncate">
+                                {webhook.url.slice(0, 5) +
+                                  "....." +
+                                  webhook.url.slice(-5)}
+                              </code>
+                              {/* <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                          onClick={() => copy.mutate(webhook.url)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                          onClick={() => window.open(webhook.url, "_blank")}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button> */}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                "text-xs flex items-center gap-1 w-fit bg-electric_indigo-900/20 text-white/60",
+                                WEBHOOK_TYPES.find(
+                                  (t) => t.value === webhook.webhook_type
+                                )?.color
+                              )}
+                            >
+                              {getWebhookTypeIcon(webhook.webhook_type)}
+                              {WEBHOOK_TYPES.find(
+                                (t) => t.value === webhook.webhook_type
+                              )?.label || webhook.webhook_type}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex flex-wrap gap-1">
+                              {webhook.event_types?.slice(0, 2).map((event) => (
+                                <Badge
+                                  key={event}
+                                  variant="secondary"
+                                  className="text-xs bg-gray-700 text-gray-300"
+                                >
+                                  {WEBHOOK_EVENTS.find(
+                                    (e) => e.value === event
+                                  )?.label.split(" ")[0] || event}
+                                </Badge>
+                              ))}
+                              {webhook.event_types?.length > 2 && (
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs bg-gray-700 text-gray-300"
+                                >
+                                  +{webhook.event_types.length - 2} more
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center space-x-2">
+                              <Badge
+                                className={`${
+                                  webhook.is_active
+                                    ? "bg-green-900 text-green-300 border-green-800"
+                                    : "bg-gray-700 text-gray-300 border-gray-600"
+                                } border`}
+                              >
+                                {webhook.is_active ? "Active" : "Inactive"}
+                              </Badge>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <span className="text-sm text-gray-400">
+                              {formatLastUsed(webhook.last_triggered_at)}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <span className="text-sm text-nowrap text-gray-400">
+                              {formatDate(webhook.created_at)}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-white">
+                                {webhook.created_by?.name || "Unknown"}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {webhook.created_by?.email}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleToggleWebhook(
+                                    webhook.id,
+                                    webhook.is_active
+                                  )
+                                }
+                                disabled={
+                                  actionLoadingStates[webhook.id] ||
+                                  updateWebhook.isPending
+                                }
+                                className="text-white border-gray-600 hover:bg-gray-700"
+                                title={
+                                  webhook.is_active
+                                    ? "Disable Webhook"
+                                    : "Enable Webhook"
+                                }
+                              >
+                                {actionLoadingStates[webhook.id] ? (
+                                  <div className="size-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : webhook.is_active ? (
+                                  <ShieldBan className="size-3" />
+                                ) : (
+                                  <ShieldCheck className="size-3" />
+                                )}
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteWebhook(webhook.id)}
+                                disabled={
+                                  actionLoadingStates[webhook.id] ||
+                                  deleteWebhook.isPending
+                                }
+                                className="text-red-400 border-red-600 hover:bg-red-900/20 hover:text-red-300"
+                                title="Delete Webhook"
+                              >
+                                {actionLoadingStates[webhook.id] ? (
+                                  <div className="size-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <Trash2 className="size-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardContent>
       </Card>
 
       {/* Webhook Details/Stats Card */}
-      {webhooks && webhooks.length > 0 && (
+      {/* {webhooks && webhooks.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="bg-gray-800 border-gray-700">
             <CardContent className="p-6">
@@ -827,7 +919,7 @@ export const WebHooks = () => {
             </CardContent>
           </Card>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

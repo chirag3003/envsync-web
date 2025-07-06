@@ -123,3 +123,11 @@ body,
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, and Opera */
 }
+
+img {
+  user-select: none;
+}
+
+*::selection {
+  background-color: #400093;
+}

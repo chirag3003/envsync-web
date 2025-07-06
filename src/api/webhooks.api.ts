@@ -3,7 +3,7 @@ import { MutationOptions, sdk } from "./base";
 import {
   UpdateWebhookRequest,
   WebhookResponse,
-  CreateWebhookRequest  
+  CreateWebhookRequest,
 } from "@envsync-cloud/envsync-ts-sdk";
 import { API_KEYS } from "../constants";
 import { useInvalidateQueries } from "@/hooks/useApi";
@@ -34,7 +34,6 @@ const useWebhooks = () => {
     },
     refetchInterval: 5 * 60 * 1000,
     retry: 3,
-    initialData: [],
   });
 };
 

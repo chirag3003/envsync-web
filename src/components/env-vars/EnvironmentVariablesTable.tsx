@@ -33,8 +33,8 @@ import {
 } from "lucide-react";
 import { EnvironmentVariable, EnvironmentType } from "@/constants";
 import { useCopy } from "@/hooks/useClipboard";
-import { parseAsString, useQueryState } from "nuqs";
 import { getDefaultEnvironmentType } from "@/lib/utils";
+import { Count } from "../ui/count";
 
 interface EnvironmentVariablesTableProps {
   variables: EnvironmentVariable[];
@@ -142,8 +142,13 @@ export const EnvironmentVariablesTable = ({
             ) : (
               <Key className="size-8 mr-2 bg-emerald-500 border border-emerald-700 p-2 stroke-[3] text-white rounded-md" />
             )}
-            {isSecrets ? "Secrets" : "Environment Variables"} (
-            {filteredVariables.length})
+            {isSecrets ? "Secrets" : "Environment Variables"}
+            <Count
+              count={filteredVariables.length}
+              variant="subtle"
+              size="xl"
+              className="ml-2"
+            />
           </CardTitle>
 
           {/* Filters */}

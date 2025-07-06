@@ -791,6 +791,20 @@ export const WebHooks = () => {
                                   variant="secondary"
                                   className="text-xs bg-gray-700 text-gray-300"
                                 >
+                                  <div
+                                    className={cn(
+                                      "rounded-full size-2 mr-1",
+                                      event.includes("view")
+                                        ? "bg-indigo-500"
+                                        : event.includes("create")
+                                        ? "bg-emerald-500"
+                                        : event.includes("update")
+                                        ? "bg-amber-500"
+                                        : event.includes("delete")
+                                        ? "bg-rose-500"
+                                        : "bg-gray-500"
+                                    )}
+                                  />
                                   {WEBHOOK_EVENTS.find(
                                     (e) => e.value === event
                                   )?.label.split(" ")[0] || event}

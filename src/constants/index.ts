@@ -21,6 +21,7 @@ export enum API_KEYS {
   ALL_AUDIT_LOGS = "audit-logs/all",
   ALL_ENVIRONMENT_TYPES = "environment-types/all",
   ALL_ENVIRONMENT_VARIABLES = "environment-variables/all",
+  ALL_PITCHANGES = "pit-changes/all",
 }
 
 export const SCOPES = [
@@ -162,11 +163,6 @@ export interface EnvironmentVariable {
   created_at: Date;
   updated_at: Date;
   app_id: string;
-  created_by?: {
-    id: string;
-    name: string;
-    email: string;
-  };
 }
 
 export interface EnvVarFormData {

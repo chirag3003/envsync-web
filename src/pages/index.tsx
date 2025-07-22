@@ -16,9 +16,9 @@ import ProjectEnvironments from "@/pages/ProjectVariables";
 import ProjectSecrets from "@/pages/ProjectSecrets";
 import CreateProject from "@/pages/CreateProject";
 import ManageEnvironment from "@/pages/ManageEnvironment";
-import PointInTime from "@/pages/PointInTime";
+import PointInTimeVariables from "@/pages/PointInTimeVariables";
 
-export const Index = () => {
+export const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -41,11 +41,7 @@ export const Index = () => {
           />
           <Route
             path="applications/pit/:projectNameId"
-            element={<PointInTime />}
-          />
-          <Route
-            path="applications/pit/:projectNameId/secrets"
-            element={<PointInTime />}
+            element={<PointInTimeVariables />}
           />
           <Route path="roles" element={<Roles />} />
           <Route path="users" element={<Users />} />
@@ -61,4 +57,4 @@ export const Index = () => {
   );
 };
 
-export default Index;
+export default AppRoutes;

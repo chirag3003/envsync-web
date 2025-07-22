@@ -33,19 +33,22 @@ export const PasswordResetModal = ({
             Reset Password
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            A password reset link will be sent to your email address. You'll need to check your email 
-            and follow the instructions to set a new password.
+            A password reset link will be sent to your email address. You'll
+            need to check your email and follow the instructions to set a new
+            password.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
-          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
+          <div className="bg-electric_indigo-900/20 border border-electric_indigo-800 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <Key className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-blue-200">
+              <Key className="w-5 h-5 text-electric_indigo-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-electric_indigo-200">
                 <p className="font-medium mb-1">What happens next:</p>
-                <ul className="list-disc list-inside space-y-1 text-blue-300">
-                  <li>Password reset email sent to: <strong>{userEmail}</strong></li>
+                <ul className="list-disc list-inside space-y-1 text-electric_indigo-300">
+                  <li>
+                    Password reset email sent to: <strong>{userEmail}</strong>
+                  </li>
                   <li>Check your inbox and spam folder</li>
                   <li>Click the reset link in the email</li>
                   <li>Set your new password</li>

@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { App } from "@/constants";
+import { useNavigate } from "react-router-dom";
 
 interface ApplicationCardProps {
   app: App;
@@ -34,6 +35,7 @@ export const ApplicationCard = ({
   onEdit,
   onDelete,
 }: ApplicationCardProps) => {
+  const navigate = useNavigate();
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
@@ -57,11 +59,11 @@ export const ApplicationCard = ({
   return (
     <Card className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-all duration-200 group cursor-pointer">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div
-            className="flex items-center space-x-3"
-            onClick={() => onView(app)}
-          >
+        <div
+          onClick={() => onView(app)}
+          className="flex items-start justify-between"
+        >
+          <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-blue-400 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Database className="w-5 h-5 text-white" />
             </div>
@@ -150,8 +152,8 @@ export const ApplicationCard = ({
             {app.enable_secrets && (
               <div className="flex items-center space-x-1 text-slate-400">
                 <Shield className="w-3 h-3" />
-              <span>{app.secret_count || 0} secrets</span>
-            </div>
+                <span>{app.secret_count || 0} secrets</span>
+              </div>
             )}
           </div>
 
@@ -165,7 +167,7 @@ export const ApplicationCard = ({
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              onView(app);
+              navigate(`/applications/${app.id}`);
             }}
             className="w-full bg-slate-700 hover:bg-slate-600 text-white"
             size="sm"

@@ -64,7 +64,7 @@ export const ViewAppModal = ({
       <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
         <DialogHeader>
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-blue-400 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-electric_indigo-400 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Database className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -100,8 +100,8 @@ export const ViewAppModal = ({
                 {app.enable_secrets && (
                   <div className="flex items-center space-x-1">
                     <Shield className="w-4 h-4" />
-                  <span>{app.secret_count || 0} secrets</span>
-                </div>
+                    <span>{app.secret_count || 0} secrets</span>
+                  </div>
                 )}
               </div>
             </div>

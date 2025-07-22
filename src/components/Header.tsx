@@ -15,7 +15,7 @@ export const Header = () => {
               className="w-8 h-8 rounded-xl object-cover"
             />
           ) : (
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-blue-400 rounded-xl flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-electric_indigo-400 rounded-xl flex items-center justify-center">
               <span className="text-white font-semibold text-sm">
                 {user?.org?.name?.charAt(0)?.toUpperCase() || "O"}
               </span>

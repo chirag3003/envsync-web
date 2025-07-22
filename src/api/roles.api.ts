@@ -1,14 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { MutationOptions, sdk } from "./base";
+import { sdk } from "./base";
 import {
-  ApiKeyResponse,
   CreateRoleRequest,
-  RegenerateApiKeyResponse,
   RoleResponse,
-  UpdateApiKeyRequest,
   UpdateRoleRequest,
 } from "@envsync-cloud/envsync-ts-sdk";
-import { API_KEYS } from "../constants";
 import { useInvalidateQueries } from "@/hooks/useApi";
 import { getRandomHexCode } from "@/lib/utils";
 
@@ -94,9 +90,11 @@ const useUpdateRole = () => {
   const { invalidateRoles } = useInvalidateQueries();
 
   return useMutation({
-    mutationFn: async ({ role_id, ...payload }: UpdateRoleRequest) => {
-      console.log("Updating role with payload:", payload);
-      const role = await sdk.roles.updateRole(role_id, payload);
+    mutationFn: async ({ role_id }: UpdateRoleRequest) => {
+      console.log("Updating role with payload:");
+      const role = await sdk.roles.updateRole(role_id, {
+        role_id
+      });
       return role;
     },
     onSettled: () => {

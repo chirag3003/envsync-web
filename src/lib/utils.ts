@@ -1,3 +1,4 @@
+import { EnvironmentType } from "@/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -5,8 +6,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatLastUsed = (lastUsedAt: Date | null) => {
+export const formatLastUsed = (lastUsedAt: Date | string | null) => {
   if (!lastUsedAt) return "Never";
+  if (typeof lastUsedAt === "string") {
+    lastUsedAt = new Date(lastUsedAt);
+  } else if (!(lastUsedAt instanceof Date)) {
+    throw new Error("Invalid date format");
+  }
 
   const now = new Date();
   const diffMs = now.getTime() - lastUsedAt.getTime();
@@ -18,6 +24,34 @@ export const formatLastUsed = (lastUsedAt: Date | null) => {
   if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
   if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
   return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+};
+
+export const formatDate = (date: Date | string) => {
+  if (typeof date === "string") {
+    date = new Date(date);
+  } else if (!(date instanceof Date)) {
+    throw new Error("Invalid date format");
+  }
+
+  const now = new Date();
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } else {
+    return date.toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
 };
 
 export const getRandomHexCode = () => {
@@ -115,4 +149,15 @@ export const generateColorShades = (
     original: "#" + validHex,
     dark: darkHex,
   };
+};
+
+export const getDefaultEnvironmentType = (
+  environmentTypes: EnvironmentType[]
+): string => {
+  if (!environmentTypes || environmentTypes.length === 0) {
+    return "";
+  }
+  const defaultEnvType = environmentTypes.find((env) => env.is_default);
+
+  return defaultEnvType ? defaultEnvType.id : environmentTypes[0].id;
 };

@@ -22,6 +22,7 @@ export const useProjectEnvironments = (projectNameId: string) => {
     queryKey: ["project-environments", projectNameId],
     queryFn: async () => {
       const projectResponse = await api.applications.getApp(projectNameId);
+      const usersList = await api.users.getUsers();
 
       const envVarsResponse = await Promise.all(
         projectResponse.env_types.map(async (envType) => {
@@ -68,11 +69,6 @@ export const useProjectEnvironments = (projectNameId: string) => {
           env_type_id: envVar.env_type_id,
           created_at: new Date(envVar.created_at),
           updated_at: new Date(envVar.updated_at),
-          created_by: {
-            email: "dev@test.com",
-            id: "dev-id",
-            name: "Developer",
-          },
         })
       );
 
@@ -86,11 +82,6 @@ export const useProjectEnvironments = (projectNameId: string) => {
         env_type_id: secret.env_type_id,
         created_at: new Date(secret.created_at),
         updated_at: new Date(secret.updated_at),
-        created_by: {
-          email: "dev@test.com",
-          id: "dev-id",
-          name: "Developer",
-        },
       }));
 
       const project: Project = {

@@ -89,7 +89,7 @@ export const RootLayout = () => {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`flex-1 h-screen flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
           sidebarExpanded ? "ml-64" : "ml-16"
         }`}
       >
@@ -99,10 +99,8 @@ export const RootLayout = () => {
         </div>
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
-            <Outlet />
-          </div>
+        <main className="flex-1 p-6 overflow-y-auto">
+          <Outlet />
         </main>
       </div>
 

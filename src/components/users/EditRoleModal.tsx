@@ -60,7 +60,11 @@ export const EditRoleModal = ({
       return <DollarSign className="w-3 h-3" />;
     } else if (roleLower.includes("admin")) {
       return <Crown className="w-3 h-3" />;
-    } else if (roleLower.includes("developer") || roleLower.includes("dev") || roleLower.includes("engineer")) {
+    } else if (
+      roleLower.includes("developer") ||
+      roleLower.includes("dev") ||
+      roleLower.includes("engineer")
+    ) {
       return <Code className="w-3 h-3" />;
     } else if (roleLower.includes("manager") || roleLower.includes("lead")) {
       return <Shield className="w-3 h-3" />;
@@ -75,7 +79,8 @@ export const EditRoleModal = ({
         <DialogHeader>
           <DialogTitle className="text-white">Edit User Role</DialogTitle>
           <DialogDescription className="text-gray-400">
-            Change the role for <strong className="text-white">{selectedUserName}</strong>.
+            Change the role for{" "}
+            <strong className="text-white">{selectedUserName}</strong>.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -88,14 +93,20 @@ export const EditRoleModal = ({
               onValueChange={setSelectedRoleId}
               disabled={isLoading}
             >
-              <SelectTrigger className={`bg-gray-900 border-gray-700 text-white ${
-                formErrors.role ? 'border-red-500' : ''
-              }`}>
+              <SelectTrigger
+                className={`bg-gray-900 border-gray-700 text-white ${
+                  formErrors.role ? "border-red-500" : ""
+                }`}
+              >
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700">
                 {roles.map((role) => (
-                  <SelectItem key={role.id} value={role.id} className="text-white hover:bg-gray-700">
+                  <SelectItem
+                    key={role.id}
+                    value={role.id}
+                    className="text-white hover:bg-gray-700"
+                  >
                     <div className="flex items-center space-x-2">
                       {getRoleIcon(role.name)}
                       <span>{role.name}</span>

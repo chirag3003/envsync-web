@@ -1,13 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { UserPlus2, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { InviteUserModal } from "@/components/users/InviteUserModal";
 import { EditRoleModal } from "@/components/users/EditRoleModal";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
+import { InvitationsModal } from "@/components/users/InvitationsModal";
 import { UsersTable } from "@/components/users/UsersTable";
-import { UsersLoadingPage } from "./loading";
-import { UsersErrorPage } from "./error";
 import { useUsers } from "@/hooks/useUsers";
 
 interface User {
@@ -27,7 +26,6 @@ export const Users = () => {
     users,
     roles,
     isLoading,
-    error,
     selectedUserId,
     selectedUserName,
     emailAddress,
@@ -47,12 +45,14 @@ export const Users = () => {
     resetInviteForm,
     resetEditForm,
     resetDeleteForm,
+    refetch,
   } = useUsers();
 
   // Dialog states
   const [showInviteUserModalOpen, setShowInviteUserModalOpen] = useState(false);
   const [showEditRoleModalOpen, setShowEditRoleModalOpen] = useState(false);
   const [showDeleteUserModalOpen, setShowDeleteUserModalOpen] = useState(false);
+  const [showInvitationsModalOpen, setShowInvitationsModalOpen] = useState(false);
 
   // Event handlers
   const handleInviteUser = useCallback(() => {
@@ -131,16 +131,10 @@ export const Users = () => {
     resetDeleteForm();
   }, [resetDeleteForm]);
 
-  if (isLoading || !user) {
-    return <UsersLoadingPage />;
-  }
-
-  if (error) {
-    return <UsersErrorPage />;
-  }
-
-  const { is_admin, is_master } = user.role;
-  const canManageUsers = is_admin || is_master;
+  const canManageUsers = useMemo(() => {
+    if (!user?.role) return false;
+    return user.role.is_master || user.role.is_admin;
+  }, [user]);
 
   return (
     <div className="space-y-6">
@@ -152,14 +146,24 @@ export const Users = () => {
           </p>
         </div>
         {canManageUsers && (
-          <Button
-            className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
-            onClick={() => setShowInviteUserModalOpen(true)}
-            disabled={inviteUserMutation.isPending}
-          >
-            <Plus className="size-4 mr-2" />
-            Invite Member
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              onClick={() => setShowInvitationsModalOpen(true)}
+            >
+              <Mail className="size-4 mr-1" />
+              Manage Invitations
+            </Button>
+            <Button
+              className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
+              onClick={() => setShowInviteUserModalOpen(true)}
+              disabled={inviteUserMutation.isPending}
+            >
+              <UserPlus2 className="size-4 mr-1" />
+              Invite Member
+            </Button>
+          </div>
         )}
       </div>
 
@@ -208,14 +212,22 @@ export const Users = () => {
         onClose={handleCloseDeleteModal}
       />
 
+      {/* Invitations Modal */}
+      <InvitationsModal
+        open={showInvitationsModalOpen}
+        onOpenChange={setShowInvitationsModalOpen}
+      />
+
       {/* Users Table */}
       <UsersTable
         users={users}
+        loading={isLoading}
         actionLoadingStates={actionLoadingStates}
         canManageUsers={canManageUsers}
         onInviteClick={() => setShowInviteUserModalOpen(true)}
         onEditRole={handleOpenEditModal}
         onDeleteUser={handleOpenDeleteModal}
+        refetch={refetch}
       />
     </div>
   );

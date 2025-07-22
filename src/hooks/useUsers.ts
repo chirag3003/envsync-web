@@ -28,22 +28,30 @@ export const useUsers = () => {
   const [emailAddress, setEmailAddress] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [actionLoadingStates, setActionLoadingStates] = useState<Record<string, boolean>>({});
+  const [actionLoadingStates, setActionLoadingStates] = useState<
+    Record<string, boolean>
+  >({});
 
   // Fetch users and roles data
-  const { data: { users = [], roles = [] } = {}, isLoading, error } = useQuery({
+  const {
+    data: { users = [], roles = [] } = {},
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["usersData"],
     queryFn: async () => {
       const [usersData, rolesData] = await Promise.all([
         api.users.getUsers(),
-        api.roles.getAllRoles()
+        api.roles.getAllRoles(),
       ]);
 
       const processedUsers = usersData.map((user) => ({
         id: user.id,
         name: user.full_name,
         email: user.email,
-        role: rolesData.find((role) => role.id === user.role_id)?.name || "Viewer",
+        role:
+          rolesData.find((role) => role.id === user.role_id)?.name || "Viewer",
         roleId: user.role_id,
         status: user.is_active ? "active" : "inactive",
         lastSeen: new Date(user.updated_at).toLocaleDateString("en-US", {
@@ -70,7 +78,7 @@ export const useUsers = () => {
 
   // Helper function to set loading state for individual actions
   const setActionLoading = useCallback((userId: string, loading: boolean) => {
-    setActionLoadingStates(prev => ({ ...prev, [userId]: loading }));
+    setActionLoadingStates((prev) => ({ ...prev, [userId]: loading }));
   }, []);
 
   // Form validation
@@ -104,7 +112,13 @@ export const useUsers = () => {
 
   // Mutations
   const inviteUserMutation = useMutation({
-    mutationFn: async ({ email, role_id }: { email: string; role_id: string }) => {
+    mutationFn: async ({
+      email,
+      role_id,
+    }: {
+      email: string;
+      role_id: string;
+    }) => {
       return await api.onboarding.createUserInvite({ email, role_id });
     },
     onSuccess: () => {
@@ -134,7 +148,13 @@ export const useUsers = () => {
   });
 
   const editUserRoleMutation = useMutation({
-    mutationFn: async ({ userId, roleId }: { userId: string; roleId: string }) => {
+    mutationFn: async ({
+      userId,
+      roleId,
+    }: {
+      userId: string;
+      roleId: string;
+    }) => {
       setActionLoading(userId, true);
       return await api.users.updateRole(userId, { role_id: roleId });
     },
@@ -174,7 +194,7 @@ export const useUsers = () => {
     roles,
     isLoading,
     error,
-    
+
     // State
     selectedUserId,
     selectedUserName,
@@ -182,24 +202,25 @@ export const useUsers = () => {
     selectedRoleId,
     formErrors,
     actionLoadingStates,
-    
+
     // Setters
     setSelectedUserId,
     setSelectedUserName,
     setEmailAddress,
     setSelectedRoleId,
     setFormErrors,
-    
+
     // Mutations
     inviteUserMutation,
     deleteUserMutation,
     editUserRoleMutation,
-    
+
     // Validation
     validateInviteForm,
     validateEditForm,
-    
+
     // Reset functions
+    refetch,
     resetInviteForm,
     resetEditForm,
     resetDeleteForm,

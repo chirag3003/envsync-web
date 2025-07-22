@@ -46,6 +46,37 @@ import { AuditActions } from "@/lib/audit.type";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AuditLog, AuditLogRow } from "@/components/audit/row";
 import { AuditLogRowSkeleton } from "@/components/audit/loading";
+import z from "zod";
+
+export const ActionCategories = z.enum([
+	'app*',
+	'audit_log*',
+	'env*',
+	'env_store*',
+	'secret_store*',
+	'onboarding*',
+	'org*',
+	'role*',
+	'user*',
+	'api_key*',
+	'webhook*',
+	'cli*',
+]);
+
+export type ActionCtgs = z.infer<typeof ActionCategories>;
+
+export const ActionPastTimeOptions = z.enum([
+	"last_3_hours",
+	"last_24_hours",
+	"last_7_days",
+	"last_30_days",
+	"last_90_days",
+	"last_180_days",
+	"last_1_year",
+	"all_time"
+]);
+
+export type ActionPastTimes = z.infer<typeof ActionPastTimeOptions>;
 
 interface PaginationInfo {
   page: number;
@@ -69,27 +100,38 @@ const DEBOUNCE_DELAY = 300;
 const DEFAULT_FILTER_OPTIONS: FilterOptions = {
   action: "all",
   user: "all",
-  timeRange: "24h",
+  timeRange: "all_time",
   resourceType: "all",
 };
 
 const TIME_RANGE_OPTIONS = [
-  { value: "1h", label: "Last hour" },
-  { value: "24h", label: "Last 24 hours" },
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "90d", label: "Last 90 days" },
-  { value: "custom", label: "Custom range" },
+  { value: "last_3_hours", label: "Last 3 Hours" },
+  { value: "last_24_hours", label: "Last 24 Hours" },
+  { value: "last_7_days", label: "Last 7 Days" },
+  { value: "last_30_days", label: "Last 30 Days" },
+  { value: "last_90_days", label: "Last 90 Days" },
+  { value: "last_180_days", label: "Last 180 Days" },
+  { value: "last_1_year", label: "Last 1 Year" },
+  { value: "all_time", label: "All Time" },
 ] as const;
 
-const RESOURCE_TYPE_OPTIONS = [
+const RESOURCE_TYPE_OPTIONS: {
+  value: z.infer<typeof ActionCategories> | "all",
+  label: string;
+}[] = [
   { value: "all", label: "All Resources" },
-  { value: "app", label: "Applications" },
-  { value: "env", label: "Environments" },
-  { value: "user", label: "Users" },
-  { value: "org", label: "Organization" },
-  { value: "api_key", label: "API Keys" },
-  { value: "cli", label: "CLI" },
+  { value: "app*", label: "Applications" },
+  { value: "env*", label: "Environment Variables" },
+  { value: "user*", label: "Users" },
+  { value: "org*", label: "Organizations" },
+  { value: "api_key*", label: "API Keys" },
+  { value: "cli*", label: "CLI Commands" },
+  { value: "audit_log*", label: "Audit Logs" },
+  { value: "env_store*", label: "Environment Store" },
+  { value: "secret_store*", label: "Secret Store" },
+  { value: "webhook*", label: "Webhooks" },
+  { value: "role*", label: "Roles" },
+  { value: "onboarding*", label: "Onboarding" },
 ] as const;
 
 // Action categorization for better UX
@@ -176,6 +218,15 @@ export const AuditLogs = () => {
     total: 0,
     totalPages: 0,
   });
+  const [customFilters, setCustomFilters] = useState<{
+    filterByUser: string;
+    filterByCategory: "app*" | "audit_log*" | "env*" | "env_store*" | "secret_store*" | "onboarding*" | "org*" | "role*" | "user*" | "api_key*" | "webhook*" | "cli*" | undefined | null;
+    filterByPastTime: 'last_3_hours' | 'last_24_hours' | 'last_7_days' | 'last_30_days' | 'last_90_days' | 'last_180_days' | 'last_1_year' | 'all_time' | undefined | null;
+  }>({
+    filterByUser: "",
+    filterByCategory: null,
+    filterByPastTime: null,
+  });
 
   // Debounce search query
   useEffect(() => {
@@ -207,6 +258,7 @@ export const AuditLogs = () => {
       "audit-logs",
       pagination.page,
       pagination.pageSize,
+      customFilters,
       debouncedSearchQuery,
       filterOptions,
     ],
@@ -244,7 +296,10 @@ export const AuditLogs = () => {
         const [auditLogsResponse, usersResponse] = await Promise.all([
           api.auditLogs.getAuditLogs(
             pagination.page.toString(),
-            pagination.pageSize.toString()
+            pagination.pageSize.toString(),
+            customFilters.filterByUser || undefined,
+            customFilters.filterByCategory || undefined,
+            customFilters.filterByPastTime || undefined,
           ),
           api.users.getUsers(),
         ]);
@@ -352,6 +407,23 @@ export const AuditLogs = () => {
       envs_viewed: "Viewed environment variables",
       envs_batch_created: "Created multiple environment variables",
       envs_batch_updated: "Updated multiple environment variables",
+      envs_batch_deleted: "Deleted multiple environment variables",
+
+      // Environment rollback actions
+      envs_rollback_pit: "Rolled back environment variables to PIT",
+      env_variable_rollback_pit: "Rolled back environment variable to PIT",
+      envs_rollback_timestamp: "Rolled back environment variables to timestamp",
+      env_variable_rollback_timestamp: "Rolled back environment variable to timestamp",
+      env_variable_diff_viewed: "Viewed environment variable diff",
+      env_variable_timeline_viewed: "Viewed environment variable timeline",
+      env_variable_history_viewed: "Viewed environment variable history",
+      envs_pit_viewed: "Viewed environment variables PIT",
+      envs_timestamp_viewed: "Viewed environment variables timestamp",
+
+      // Env Types
+      env_type_created: "Created environment type",
+      env_type_updated: "Updated environment type",
+      env_type_deleted: "Deleted environment type",
 
       // User actions
       users_retrieved: "Retrieved users list",
@@ -371,12 +443,58 @@ export const AuditLogs = () => {
       user_invite_viewed: "Viewed user invitation",
       user_invite_updated: "Updated user invitation",
       user_invite_deleted: "Deleted user invitation",
+      user_invites_retrieved: "Retrieved user invitations list",
 
       // Audit log actions
       get_audit_logs: "Viewed audit logs",
 
       // CLI actions
       cli_command_executed: "Executed CLI command",
+
+      // API key actions
+      apikey_created: "Created API key",
+      apikey_deleted: "Deleted API key",
+      apikey_viewed: "Viewed API key",
+      apikeys_viewed: "Viewed API keys list",
+      apikey_regenerated: "Regenerated API key",
+      apikey_updated: "Updated API key",
+      
+      // Webhook actions
+      webhook_created: "Created webhook",
+      webhook_updated: "Updated webhook",
+      webhook_deleted: "Deleted webhook",
+      webhook_triggered: "Triggered webhook",
+      webhook_viewed: "Viewed webhook",
+      webhooks_viewed: "Viewed webhooks list",
+
+      // Secret store actions
+      secret_created: "Created secret",
+      secret_deleted: "Deleted secret",
+      secret_updated: "Updated secret",
+      secret_viewed: "Viewed secret",
+      secrets_viewed: "Viewed secrets list",
+      secrets_batch_created: "Created multiple secrets",
+      secrets_batch_updated: "Updated multiple secrets",
+      secrets_batch_deleted: "Deleted multiple secrets",
+
+      // Secret rollback actions
+      secrets_rollback_pit: "Rolled back secrets to PIT",
+      secrets_rollback_timestamp: "Rolled back secrets to timestamp",
+      secret_variable_rollback_pit: "Rolled back secret variable to PIT",
+      secret_variable_rollback_timestamp: "Rolled back secret variable to timestamp",
+      secret_history_viewed: "Viewed secret history",
+      secret_variable_history_viewed: "Viewed secret variable history",
+      secret_diff_viewed: "Viewed secret diff",
+      secret_timeline_viewed: "Viewed secret timeline",
+      secrets_pit_viewed: "Viewed secrets PIT",
+      secrets_timestamp_viewed: "Viewed secrets timestamp",
+
+      // Role actions
+      roles_viewed: "Viewed roles",
+      role_viewed: "Viewed role",
+      role_created: "Created role",
+      role_updated: "Updated role",
+      role_deleted: "Deleted role",
     };
 
     return (
@@ -387,12 +505,11 @@ export const AuditLogs = () => {
 
   const getResourceTypeFromAction = useCallback(
     (action: AuditActions): string => {
-      if (action.startsWith("app_")) return "app";
-      if (action.startsWith("env_")) return "env";
-      if (action.startsWith("user_")) return "user";
-      if (action.startsWith("org_")) return "org";
-      if (action.startsWith("cli_")) return "cli";
-      return "system";
+      for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+        if (actions.includes(action as never)) {
+          return category;
+        }
+      }
     },
     []
   );
@@ -483,6 +600,28 @@ export const AuditLogs = () => {
   const handleFilterChange = useCallback(
     (key: keyof FilterOptions, value: string) => {
       setFilterOptions((prev) => ({ ...prev, [key]: value }));
+      
+      // Update customFilters based on UI filter changes
+      if (key === "user") {
+        setCustomFilters((prev) => ({
+          ...prev,
+          filterByUser: value === "all" ? "" : value,
+        }));
+      }
+      
+      if (key === "resourceType") {
+        setCustomFilters((prev) => ({
+          ...prev,
+          filterByCategory: value === "all" ? null : value as any,
+        }));
+      }
+      
+      if (key === "timeRange") {
+        setCustomFilters((prev) => ({
+          ...prev,
+          filterByPastTime: value === "all_time" ? null : value as any,
+        }));
+      }
     },
     []
   );
@@ -850,8 +989,7 @@ export const AuditLogs = () => {
                               actionBadgeColor: getActionBadgeColor(log.action),
                               actionIcon: getActionIcon(log.action),
                               resourceIcon: getResourceIcon(
-                                getResourceTypeFromAction(log.action) ||
-                                  "System"
+                                getResourceTypeFromAction(log.action)
                               ),
                             }}
                           />

@@ -163,11 +163,6 @@ export interface EnvironmentVariable {
   created_at: Date;
   updated_at: Date;
   app_id: string;
-  created_by?: {
-    id: string;
-    name: string;
-    email: string;
-  };
 }
 
 export interface EnvVarFormData {

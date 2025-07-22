@@ -35,7 +35,6 @@ import { Badge } from "../ui/badge";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { usePointInTimeDiff } from "@/api/pointInTime.api";
-import { toast } from "sonner";
 
 interface CheckDiffModalProps {
   isOpen: boolean;

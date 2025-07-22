@@ -64,9 +64,7 @@ export const ProjectEnvironmentsHeader = ({
   const handleSectionChange = (section: "environments" | "secrets") => {
     if (!projectNameId) return;
 
-    const basePath = `/applications/${projectNameId}`;
-    const targetPath = section === "secrets" ? `${basePath}/secrets` : basePath;
-
+    const targetPath = `/applications/${projectNameId}`;
     navigate(targetPath);
   };
 
@@ -250,13 +248,14 @@ export const ProjectEnvironmentsHeader = ({
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={onRollback}
-                className="text-white hover:bg-slate-700 cursor-pointer"
+              {!isSecretsPage && (
+                <DropdownMenuItem
+                  onClick={onRollback}
+                  className="text-white hover:bg-slate-700 cursor-pointer"
               >
                 <History className="w-4 h-4 mr-2" />
                 Recovery
-              </DropdownMenuItem>
+              </DropdownMenuItem>)}
               {canEdit && (
                 <DropdownMenuItem
                   onClick={onManageEnvironments}

@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { UserPlus2 } from "lucide-react";
+import { UserPlus2, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useCallback, useMemo } from "react";
 import { InviteUserModal } from "@/components/users/InviteUserModal";
 import { EditRoleModal } from "@/components/users/EditRoleModal";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
+import { InvitationsModal } from "@/components/users/InvitationsModal";
 import { UsersTable } from "@/components/users/UsersTable";
 import { useUsers } from "@/hooks/useUsers";
 
@@ -51,6 +52,7 @@ export const Users = () => {
   const [showInviteUserModalOpen, setShowInviteUserModalOpen] = useState(false);
   const [showEditRoleModalOpen, setShowEditRoleModalOpen] = useState(false);
   const [showDeleteUserModalOpen, setShowDeleteUserModalOpen] = useState(false);
+  const [showInvitationsModalOpen, setShowInvitationsModalOpen] = useState(false);
 
   // Event handlers
   const handleInviteUser = useCallback(() => {
@@ -144,14 +146,24 @@ export const Users = () => {
           </p>
         </div>
         {canManageUsers && (
-          <Button
-            className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
-            onClick={() => setShowInviteUserModalOpen(true)}
-            disabled={inviteUserMutation.isPending}
-          >
-            <UserPlus2 className="size-4 mr-1" />
-            Invite Member
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              onClick={() => setShowInvitationsModalOpen(true)}
+            >
+              <Mail className="size-4 mr-1" />
+              Manage Invitations
+            </Button>
+            <Button
+              className="bg-electric_indigo-500 hover:bg-electric_indigo-600 text-white"
+              onClick={() => setShowInviteUserModalOpen(true)}
+              disabled={inviteUserMutation.isPending}
+            >
+              <UserPlus2 className="size-4 mr-1" />
+              Invite Member
+            </Button>
+          </div>
         )}
       </div>
 
@@ -198,6 +210,12 @@ export const Users = () => {
         }
         onDelete={handleDeleteUser}
         onClose={handleCloseDeleteModal}
+      />
+
+      {/* Invitations Modal */}
+      <InvitationsModal
+        open={showInvitationsModalOpen}
+        onOpenChange={setShowInvitationsModalOpen}
       />
 
       {/* Users Table */}

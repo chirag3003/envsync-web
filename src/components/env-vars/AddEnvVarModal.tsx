@@ -288,39 +288,6 @@ export const AddEnvVarModal = ({
             </div>
           </div>
 
-          {/* Sensitive Checkbox - Hidden on secrets page since it's auto-enabled */}
-          {!isSecretsPage && (
-            <div className="flex items-center space-x-3 p-4 bg-slate-900 rounded-lg border border-slate-700">
-              <Checkbox
-                id="sensitive"
-                checked={formData.sensitive}
-                onCheckedChange={(checked) =>
-                  handleInputChange("sensitive", checked as boolean)
-                }
-                disabled={isSaving}
-                className="border-slate-600"
-              />
-              <div className="flex-1">
-                <Label
-                  htmlFor="sensitive"
-                  className="text-white flex items-center cursor-pointer"
-                >
-                  {formData.sensitive ? (
-                    <Shield className="w-4 h-4 text-red-400 mr-2" />
-                  ) : (
-                    <Key className="w-4 h-4 text-slate-400 mr-2" />
-                  )}
-                  Mark as sensitive (secret)
-                </Label>
-                <p className="text-xs text-slate-400 mt-1">
-                  {formData.sensitive
-                    ? "This value will be encrypted and hidden by default"
-                    : "This value will be visible to team members with access"}
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* Preview */}
           <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
             <h4 className="text-sm font-medium text-white mb-2">Preview</h4>

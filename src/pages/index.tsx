@@ -17,7 +17,6 @@ import ProjectSecrets from "@/pages/ProjectSecrets";
 import CreateProject from "@/pages/CreateProject";
 import ManageEnvironment from "@/pages/ManageEnvironment";
 import PointInTimeVariables from "@/pages/PointInTimeVariables";
-import PointInTimeSecrets from "@/pages/PointInTimeSecrets";
 
 export const AppRoutes = () => {
   return (
@@ -43,10 +42,6 @@ export const AppRoutes = () => {
           <Route
             path="applications/pit/:projectNameId"
             element={<PointInTimeVariables />}
-          />
-          <Route
-            path="applications/pit/:projectNameId/secrets"
-            element={<PointInTimeSecrets />}
           />
           <Route path="roles" element={<Roles />} />
           <Route path="users" element={<Users />} />

@@ -86,7 +86,7 @@ export const AuditLogRow = ({ log }: AuditLogRowProps) => {
           {log.resourceIcon}
           <div>
             <div className="text-sm font-medium text-white">
-              {log.project || log.environment || "System"}
+              {log.project || log.environment || log.action}
             </div>
             {!!log.resource_type && (
               <div className="text-xs text-gray-400">{log.resource_type}</div>
